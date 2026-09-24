@@ -65,3 +65,6 @@ void loop() {
     Serial.println();
     delay(2000);
 }
+
+
+code hulp: https://www.youtube.com/watch?v=H42OY60SA8o

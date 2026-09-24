@@ -99,6 +99,9 @@
         <mxCell id="P14qOJ4C5HiBicsrtv3Z-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="I2C" vertex="1">
           <mxGeometry height="30" width="60" x="290" y="340" as="geometry" />
         </mxCell>
+        <mxCell id="P14qOJ4C5HiBicsrtv3Z-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="GPIO" vertex="1">
+          <mxGeometry height="30" width="60" x="495" y="340" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
