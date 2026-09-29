@@ -43,8 +43,8 @@
         <mxCell id="UmayzfHaWxehiafcFwG1-3" parent="1" style="whiteSpace=wrap;html=1;" value="OLED Display&lt;div&gt;tijd + meetwaarden&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="240" y="380" as="geometry" />
         </mxCell>
-        <mxCell id="UmayzfHaWxehiafcFwG1-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="wifi / MQTT" vertex="1">
-          <mxGeometry height="30" width="90" x="700" y="350" as="geometry" />
+        <mxCell id="UmayzfHaWxehiafcFwG1-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="wifi/rest api/MQTT" vertex="1">
+          <mxGeometry height="30" width="110" x="700" y="350" as="geometry" />
         </mxCell>
         <mxCell id="UmayzfHaWxehiafcFwG1-5" parent="1" style="whiteSpace=wrap;html=1;" value="MH-Z19B&lt;div&gt;CO2 sensor&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="40" y="440" as="geometry" />
@@ -52,7 +52,7 @@
         <mxCell id="UmayzfHaWxehiafcFwG1-21" edge="1" parent="1" source="UmayzfHaWxehiafcFwG1-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="UmayzfHaWxehiafcFwG1-7">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="UmayzfHaWxehiafcFwG1-6" parent="1" style="whiteSpace=wrap;html=1;" value="&lt;div&gt;php website&lt;/div&gt;" vertex="1">
+        <mxCell id="UmayzfHaWxehiafcFwG1-6" parent="1" style="whiteSpace=wrap;html=1;" value="&lt;div&gt;php website in infinityfree&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="640" y="380" as="geometry" />
         </mxCell>
         <mxCell id="Q7x92OME8P4C4--UX5nv-2" edge="1" parent="1" source="UmayzfHaWxehiafcFwG1-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="Q7x92OME8P4C4--UX5nv-1">
@@ -71,7 +71,7 @@
           <mxGeometry height="30" width="60" x="90" y="230" as="geometry" />
         </mxCell>
         <mxCell id="UmayzfHaWxehiafcFwG1-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="UART" vertex="1">
-          <mxGeometry height="30" width="60" x="100" y="385" as="geometry" />
+          <mxGeometry height="30" width="60" x="40" y="385" as="geometry" />
         </mxCell>
         <mxCell id="UmayzfHaWxehiafcFwG1-19" edge="1" parent="1" source="UmayzfHaWxehiafcFwG1-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=classic;endFill=1;startArrow=none;startFill=0;" target="UmayzfHaWxehiafcFwG1-6">
           <mxGeometry relative="1" as="geometry" />
@@ -107,6 +107,16 @@
         </mxCell>
         <mxCell id="Q7x92OME8P4C4--UX5nv-1" parent="1" style="whiteSpace=wrap;html=1;" value="dashboard" vertex="1">
           <mxGeometry height="60" width="120" x="435" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="Q7x92OME8P4C4--UX5nv-3" edge="1" parent="1" source="Q7x92OME8P4C4--UX5nv-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.837;entryY=1.043;entryDx=0;entryDy=0;entryPerimeter=0;" target="UmayzfHaWxehiafcFwG1-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="495" y="610" />
+              <mxPoint x="170" y="610" />
+              <mxPoint x="170" y="410" />
+              <mxPoint x="140.4" y="410" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
