@@ -140,9 +140,9 @@ B -> GPIO27
 | Rood | Slechte luchtkwaliteit |
 
 ## CO₂-niveaus
-< 800 ppm       Goede luchtkwaliteit
-800-1200 ppm    Matige luchtkwaliteit
-> 1200 ppm      Slechte luchtkwaliteit
+|< 800 ppm       Goede luchtkwaliteit
+|800-1200 ppm    Matige luchtkwaliteit
+|> 1200 ppm      Slechte luchtkwaliteit
 
 ---
 
