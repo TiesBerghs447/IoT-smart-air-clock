@@ -6,9 +6,9 @@ Een slimme IoT-klok die de luchtkwaliteit van een slaapkamer monitort en gebruik
 
 # Probleemstelling
 
-Veel mensen slapen in ruimtes met een slechte luchtkwaliteit zonder dit te beseffen. Een te hoge CO₂-concentratie, een oncomfortabele temperatuur of een onjuiste luchtvochtigheid kunnen een negatieve invloed hebben op de slaapkwaliteit, concentratie en het algemene welzijn. Omdat deze factoren niet zichtbaar zijn, wordt er vaak te laat geventileerd of bijgestuurd.
+Veel mensen slapen in ruimtes met een slechte luchtkwaliteit zonder dit te beseffen. Een verhoogde CO₂-concentratie, een oncomfortabele temperatuur of een onjuiste luchtvochtigheid kunnen een negatieve invloed hebben op de slaapkwaliteit. Omdat deze factoren niet zichtbaar zijn, wordt er vaak te laat geventileerd of bijgestuurd.
 
-De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en informeert de gebruiker via een OLED-display, RGB-statusled, geluidsmeldingen en een webdashboard. Hierdoor kan de gebruiker tijdig actie ondernemen om een gezondere slaapomgeving te creëren.
+De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en informeert de gebruiker via een OLED-display, RGB-led, geluidsmeldingen en een online dashboard.
 
 ---
 
@@ -24,7 +24,7 @@ De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en inform
 
 # Onderzoeksvraag
 
-> Hoe kunnen gebruikers eenvoudig geïnformeerd worden over de luchtkwaliteit, temperatuur en luchtvochtigheid van een slaapkamer zodat zij hun slaapomgeving kunnen optimaliseren?
+Hoe kan een slim IoT-systeem gebruikers op een eenvoudige en overzichtelijke manier informeren over de luchtkwaliteit van hun slaapkamer, zodat zij hun slaapomgeving kunnen optimaliseren en tijdig kunnen ingrijpen wanneer de luchtkwaliteit verslechtert?
 
 ---
 
@@ -33,10 +33,10 @@ De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en inform
 ## Lokale functies
 
 - Weergave van tijd op OLED-display
-- Meting van temperatuur
-- Meting van luchtvochtigheid
-- Meting van luchtdruk
-- Meting van CO₂-concentratie
+- Temperatuurmeting
+- Vochtigheidsmeting
+- Luchtdrukmeting
+- CO₂-meting
 - RGB-statusindicator
 - Instelbare wekker
 - Geluidsmeldingen via luidspreker
@@ -44,12 +44,12 @@ De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en inform
 
 ## IoT-functies
 
-- MQTT-communicatie
-- Raspberry Pi backend
+- WiFi-connectiviteit
+- HTTP-communicatie
+- Online databank
 - Historische opslag van meetgegevens
 - Live webdashboard
-- Historische trends en grafieken
-- Centrale verwerking van sensorgegevens
+- Historische grafieken en trends
 
 ---
 
@@ -66,7 +66,6 @@ De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en inform
 | DFPlayer Mini (YX5200) | Audio afspelen |
 | 2W 8Ω Speaker | Geluidsuitvoer |
 | Drukknoppen | Instellen klok en wekker |
-| Raspberry Pi | Backend server |
 
 ---
 
@@ -74,59 +73,63 @@ De Smart Air Clock meet continu de omgevingsfactoren in een slaapkamer en inform
 
 ## ESP32-S3
 
-De ESP32-S3 verzamelt alle sensorgegevens, verwerkt deze lokaal en verstuurt ze via MQTT naar de Raspberry Pi.
+De ESP32-S3 verzamelt sensorgegevens, verwerkt deze lokaal en verstuurt de gegevens via HTTP naar een online database.
 
-## Raspberry Pi
+## Backend
 
-De Raspberry Pi verzorgt:
+De backend draait op InfinityFree en bestaat uit:
 
-- MQTT Broker
-- Node-RED
-- Opslag van meetgegevens
-- Hosting van het dashboard
+- PHP
+- MySQL
+- HTTP API
 
-## Webdashboard
+De backend ontvangt meetgegevens, slaat deze op en maakt ze beschikbaar voor het dashboard.
+
+## Dashboard
 
 Het dashboard wordt ontwikkeld in:
 
 - HTML
 - CSS
 - JavaScript
+- Chart.js
 
-Hiermee kunnen gebruikers zowel actuele als historische gegevens bekijken via een webbrowser.
+Hiermee kunnen gebruikers actuele en historische gegevens bekijken via een webbrowser.
+
+---
+
+# Systeemarchitectuur
+Sensoren
+    ↓
+ESP32-S3
+    ↓ HTTP
+save_data.php
+    ↓
+MySQL Database
+    ↓
+latest.php / history.php
+    ↓
+HTML Dashboard
+---
 
 # Aansluitschema
 
 ## OLED + AHT20 + BMP280
-
-```text
 GPIO20 -> SDA
 GPIO21 -> SCL
-```
 
 ## MH-Z19B
-
-```text
 TX -> GPIO16
 RX -> GPIO17
-```
 
 ## DFPlayer Mini
-
-```text
 RX -> GPIO18
 TX -> GPIO19
-```
 
 ## RGB LED
-
-```text
 R -> GPIO25
 G -> GPIO26
 B -> GPIO27
-```
-
----
 
 # RGB Statusindicatie
 
@@ -137,12 +140,9 @@ B -> GPIO27
 | Rood | Slechte luchtkwaliteit |
 
 ## CO₂-niveaus
-
-```text
 < 800 ppm       Goede luchtkwaliteit
 800-1200 ppm    Matige luchtkwaliteit
-> 1200 ppm      Ventileren aanbevolen
-```
+> 1200 ppm      Slechte luchtkwaliteit
 
 ---
 
@@ -154,13 +154,12 @@ Het dashboard toont:
 - Actuele luchtvochtigheid
 - Actuele luchtdruk
 - Actuele CO₂-waarde
+- Luchtkwaliteitsstatus
 - Historische grafieken
 - Trends over tijd
-- Status van de luchtkwaliteit
 - Laatste meetmoment
 
-Toegang verloopt via een webbrowser op hetzelfde netwerk.
-
+---
 # Auteur
 
 **Ties Berghs**
