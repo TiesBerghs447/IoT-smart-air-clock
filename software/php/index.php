@@ -9,8 +9,6 @@
     <title>Smart Air Clock</title>
 
     <link rel="stylesheet" href="stylesheet.css">
-	//<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	<script src="script.js"></script>
 </head>
 
 <body>
@@ -114,6 +112,32 @@
                 </div>
 
             </div>
+            <div class="card">
+
+                <h2>Laatste Update</h2>
+
+                <div
+                    class="value"
+                    id="lastUpdate">
+
+                    --
+
+                </div>
+
+            </div>
+            <div class="card">
+
+                <h2>ESP32 Status</h2>
+
+                <div
+                    id="deviceStatus"
+                    class="value device-status unknown">
+
+                    --
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -145,6 +169,7 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 
 </body>

@@ -169,6 +169,39 @@ h2 {
     font-variant-numeric: tabular-nums;
 }
 
+.device-status {
+    font-size: 1.5rem;
+}
+
+.device-status::before {
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    margin: 0 0.55rem 0.1rem 0;
+    border-radius: 50%;
+    background: var(--muted);
+    content: "";
+    vertical-align: middle;
+}
+
+.device-status.online { color: var(--good); }
+.device-status.online::before { background: var(--good); }
+.device-status.offline { color: var(--danger); }
+.device-status.offline::before { background: var(--danger); }
+.device-status.unknown { color: var(--muted); }
+
+.settings-card select {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 6px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fbfdfb;
+    color: var(--ink);
+}
+
 .unit {
     margin-top: 5px;
     color: var(--muted);

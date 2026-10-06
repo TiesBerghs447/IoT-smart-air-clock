@@ -16,8 +16,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $config["refresh_interval"] =
         intval($_POST["refresh_interval"]);
 
+    $config["config_sync_interval"] =
+        max(15, min(3600, intval($_POST["config_sync_interval"] ?? 60)));
+
     $config["audio_volume"] =
         intval($_POST["audio_volume"]);
+
+    $audioTrack = intval($_POST["audio_track"] ?? 1);
+    $config["audio_track"] =
+        ($audioTrack >= 1 && $audioTrack <= 10) ? $audioTrack : 1;
 
     $config["alarm_hour"] =
         intval($_POST["alarm_hour"]);
@@ -141,6 +148,15 @@ type="number"
 name="refresh_interval"
 value="<?= $config['refresh_interval']; ?>">
 
+<label>ESP-instellingen synchroniseren elke (s)</label>
+
+<input
+type="number"
+min="15"
+max="3600"
+name="config_sync_interval"
+value="<?= $config['config_sync_interval'] ?? 60; ?>">
+
 </div>
 
 <div class="settings-card">
@@ -163,6 +179,13 @@ min="0"
 max="30"
 name="audio_volume"
 value="<?= $config['audio_volume']; ?>">
+
+<label for="audio_track">MP3-track</label>
+<select id="audio_track" name="audio_track">
+<?php for ($track = 1; $track <= 10; $track++): ?>
+    <option value="<?= $track; ?>" <?= (int) ($config['audio_track'] ?? 1) === $track ? 'selected' : ''; ?>>Track <?= $track; ?></option>
+<?php endfor; ?>
+</select>
 
 </div>
 

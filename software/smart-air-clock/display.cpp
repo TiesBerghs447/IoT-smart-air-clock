@@ -49,22 +49,22 @@ void updateDisplay()
 
     display.setCursor(0, 16);
     display.print("T: ");
-    display.print(temperature);
+    display.print(sensorData.temperature);
     display.println(" C");
 
     display.setCursor(0, 28);
     display.print("H: ");
-    display.print(humidity);
+    display.print(sensorData.humidity);
     display.println(" %");
 
     display.setCursor(0, 40);
     display.print("P: ");
-    display.print(pressure);
+    display.print(sensorData.pressure);
     display.println(" hPa");
 
     display.setCursor(0, 52);
     display.print("CO2: ");
-    display.print(co2ppm);
+    display.print(sensorData.co2);
     display.println(" ppm");
 
     display.display();

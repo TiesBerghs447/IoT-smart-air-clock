@@ -1,12 +1,14 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-extern float temperature;
-extern float humidity;
-extern float pressure;
+struct SensorData
+{
+    float temperature;
+    float humidity;
+    float pressure;
+    int co2;
+};
 
-extern int co2ppm;
-
-extern bool alarmEnabled;
+extern SensorData sensorData;
 
 #endif

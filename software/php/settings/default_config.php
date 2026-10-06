@@ -2,14 +2,18 @@
 
 return [
 
+    "device_api_key" => "",
+
     "co2_good_max" => 800,
     "co2_warning_max" => 1200,
 
     "upload_interval" => 30,
     "refresh_interval" => 5,
+    "config_sync_interval" => 60,
 
     "audio_enabled" => true,
     "audio_volume" => 20,
+    "audio_track" => 1,
 
     "alarm_enabled" => true,
     "alarm_hour" => 7,
