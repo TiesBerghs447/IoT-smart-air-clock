@@ -3,8 +3,8 @@
 
 #include "netwerk.h"
 
-const char* WIFI_SSID = "berghs";
-const char* WIFI_PASSWORD = "babbelroos";
+const char* WIFI_SSID = "id";
+const char* WIFI_PASSWORD = "ww";
 
 void connectWiFi()
 {
