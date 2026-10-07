@@ -72,5 +72,5 @@ void loop()
 
     Serial.print("Upload resultaat: ");
     Serial.println(success);
-    delay(3000);
+    delay(30000);
 }

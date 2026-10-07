@@ -30,9 +30,7 @@
         </li>
 
         <li>
-            #
-                Historiek
-            </a>
+            <a href="history.php">Historiek</a>
         </li>
 
         <li>
@@ -151,25 +149,8 @@
 
         </div>
 
-        <div class="chart-container">
-
-            <h2>CO₂ Historiek</h2>
-
-            <canvas id="co2Chart"></canvas>
-
-        </div>
-
-        <div class="chart-container">
-
-            <h2>Temperatuur Historiek</h2>
-
-            <canvas id="tempChart"></canvas>
-
-        </div>
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 
 </body>

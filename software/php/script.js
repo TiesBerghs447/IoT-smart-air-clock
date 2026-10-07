@@ -1,7 +1,20 @@
-let co2Chart;
-let tempChart;
 let config = null;
 let refreshTimer;
+
+function formatTimestamp(timestamp)
+{
+    if (!timestamp)
+    {
+        return "--";
+    }
+
+    const value = String(timestamp);
+    const dateTime = value.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/);
+
+    return dateTime
+        ? `${dateTime[1]} ${dateTime[2]}`
+        : value.replace(/\.\d+(?=Z|[+-]\d{2}(?::?\d{2})?$|$)/, "").replace("T", " ");
+}
 
 async function loadConfig()
 {
@@ -55,7 +68,7 @@ async function updateData()
         document.getElementById(
             "lastUpdate"
         ).innerText =
-            data.timestamp ?? "--";
+            formatTimestamp(data.timestamp);
         const deviceStatus = document.getElementById("deviceStatus");
         const status = data.device_status ?? "unknown";
         deviceStatus.innerText = status === "online"
@@ -113,126 +126,11 @@ function updateStatus(co2)
     }
 }
 
-async function loadHistory()
-{
-    try
-    {
-        const response =
-            await fetch("data/history.php");
-
-        if (!response.ok)
-        {
-            throw new Error("Historiek ophalen mislukt");
-        }
-
-        const data =
-            await response.json();
-
-        const labels =
-            data.map(
-                row => row.timestamp
-            );
-
-        const co2Values =
-            data.map(
-                row => row.co2
-            );
-
-        const tempValues =
-            data.map(
-                row => row.temperature
-            );
-
-        createCO2Chart(
-            labels,
-            co2Values
-        );
-
-        createTempChart(
-            labels,
-            tempValues
-        );
-    }
-    catch(error)
-    {
-        console.log(error);
-    }
-}
-
-function createCO2Chart(labels, values)
-{
-    new Chart(
-        document.getElementById("co2Chart"),
-        {
-            type: "line",
-
-            data:
-            {
-                labels: labels,
-
-                datasets:
-                [
-                    {
-                        label: "CO₂ ppm",
-
-                        data: values,
-
-                        borderColor: "#38bdf8",
-
-                        backgroundColor:
-                        "rgba(56,189,248,0.2)",
-
-                        fill: true,
-
-                        tension: 0.4
-                    }
-                ]
-            }
-        }
-    );
-}
-
-function createTempChart(labels, values)
-{
-    new Chart(
-        document.getElementById("tempChart"),
-        {
-            type: "line",
-
-            data:
-            {
-                labels: labels,
-
-                datasets:
-                [
-                    {
-                        label:
-                        "Temperatuur °C",
-
-                        data: values,
-
-                        borderColor: "#22c55e",
-
-                        backgroundColor:
-                        "rgba(34,197,94,0.2)",
-
-                        fill: true,
-
-                        tension: 0.4
-                    }
-                ]
-            }
-        }
-    );
-}
-
 (async () =>
 {
     await loadConfig();
 
     updateData();
-
-    loadHistory();
 
     const refreshSeconds = Number(config?.refresh_interval ?? 5);
     refreshTimer = setInterval(
