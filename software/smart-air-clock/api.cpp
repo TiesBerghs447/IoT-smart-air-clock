@@ -13,7 +13,7 @@ bool downloadConfig()
     HTTPClient http;
     
     http.begin(
-        "https://smart-air-clock.infy.click/settings/get_config.php"
+        "https://iot-smart-air-clock.onrender.com/settings/get_config.php"
     );
 
     int responseCode =
@@ -106,7 +106,7 @@ bool uploadMeasurement(
     //    "https://smart-air-clock.infy.click/data/save_data.php"
     //);
     http.begin(
-"https://smart-air-clock.infy.click/data/esp_test.php"
+    "https://iot-smart-air-clock.onrender.com/data/save_data.php"
 );
     http.addHeader(
         "Content-Type",

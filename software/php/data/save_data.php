@@ -67,5 +67,10 @@ try {
     $connection->close();
 } catch (Throwable $error) {
     http_response_code(500);
-    exit(json_encode(['error' => 'Opslaan mislukt']));
+
+    exit(
+        json_encode([
+            'error' => $error->getMessage()
+        ])
+    );
 }
