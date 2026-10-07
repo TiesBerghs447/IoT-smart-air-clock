@@ -2,6 +2,13 @@
 
 require_once __DIR__ . '/settings/database.php';
 
-$connection = database_connection();
+try
+{
+    $db = database_connection();
 
-echo "Database OK";
+    echo "Database OK";
+}
+catch(Throwable $e)
+{
+    echo $e->getMessage();
+}

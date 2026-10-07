@@ -1,45 +1,13 @@
-
-
 <?php
-/*
-function database_connection(): mysqli
+
+function database_connection(): PDO
 {
-    mysqli_report(MYSQLI_REPORT_OFF);
-
-    $connection = new mysqli(
-        "sql311.infinityfree.com",
-        "if0_43039618",
-        "WGy8FBhO7jHv",
-        "if0_43039618_smartairclock"
+    return new PDO(
+        "pgsql:host=db.dwnseqlgrlzwjnbqlnoo.supabase.co;port=5432;dbname=postgres",
+        "postgres",
+        "HIER_JOUW_SUPABASE_WACHTWOORD",
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]
     );
-
-    if ($connection->connect_error) {
-        throw new RuntimeException("Database connection failed");
-    }
-
-    if (!$connection->set_charset("utf8mb4")) {
-        throw new RuntimeException("Database charset setup failed");
-    }
-
-    return $connection;
-    
-}
-*/
-function database_connection(): mysqli
-{
-    $connection = new mysqli(
-        "sql311.infinityfree.com",
-        "if0_43039618",
-        "WGy8FBhO7jHv",
-        "if0_43039618_smartairclock"
-    );
-
-    if ($connection->connect_error) {
-        die(
-            "Connect error: " .
-            $connection->connect_error
-        );
-    }
-
-    return $connection;
 }
