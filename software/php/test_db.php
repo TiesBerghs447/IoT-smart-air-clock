@@ -1,5 +1,5 @@
 <?php
-
+echo "VERSION 999";
 echo "<pre>";
 
 echo "HOST = " . getenv("DB_HOST") . "\n";
