@@ -2,7 +2,7 @@
 
 return [
 
-    "device_api_key" => "",
+    "device_api_key" => "smartairclock2026api123456789012345",
 
     "co2_good_max" => 800,
     "co2_warning_max" => 1200,

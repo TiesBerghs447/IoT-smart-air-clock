@@ -2,7 +2,7 @@
 
 return [
     // Set this on the server, or provide ESP_API_KEY as an environment variable.
-    "device_api_key" => "",
+    "device_api_key" => "smartairclock2026api123456789012345",
 
     // CO2 thresholds in ppm.
     "co2_good_max" => 800,
