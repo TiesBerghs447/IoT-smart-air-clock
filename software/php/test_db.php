@@ -1,7 +1,9 @@
 <?php
 
-echo "VERSION 999<br><br>";
+echo "<pre>";
 
-echo "HOST = " . getenv("DB_HOST") . "<br>";
-echo "PORT = " . getenv("DB_PORT") . "<br>";
-echo "USER = " . getenv("DB_USER") . "<br>";
+var_dump(getenv("DB_HOST"));
+var_dump(getenv("DB_PORT"));
+var_dump(getenv("DB_USER"));
+
+echo "</pre>";
