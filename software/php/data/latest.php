@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Geeft de nieuwste sensormeting terug en gebruikt de uploadinstelling om
+ * te bepalen of het apparaat op het dashboard online is.
+ */
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../settings/database.php';
@@ -37,7 +41,8 @@ try
             ? null
             : (int)$response['seconds_since_update'];
 
-    $config = include __DIR__ . '/../settings/config.php';
+    require_once __DIR__ . '/../settings/config_store.php';
+    $config = load_app_config();
 
     $onlineThreshold =
         max(

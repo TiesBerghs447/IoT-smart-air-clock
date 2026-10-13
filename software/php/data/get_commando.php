@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Geeft het laatst opgeslagen LED-commando terug als JSON; levert CO2-modus
+ * met zwart als standaard wanneer er nog geen commando is opgeslagen.
+ */
 header('Content-Type: application/json; charset=utf-8');
 
 $file = __DIR__ . '/command.json';

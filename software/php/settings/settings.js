@@ -1,3 +1,4 @@
+// RGB-kleurkiezer: laadt de huidige LED-opdracht en verstuurt kleur en led_mode.
 const colorInput = document.getElementById("rgb-color");
 const colorStatus = document.getElementById("rgb-status");
 const remoteToggle = document.getElementById("remote-toggle");

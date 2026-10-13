@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Slaat een LED-commando (modus en RGB-kanalen) als JSON op voor de ESP.
+ * Dit command.json-bestand staat los van de algemene instellingen/config.json.
+ */
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')

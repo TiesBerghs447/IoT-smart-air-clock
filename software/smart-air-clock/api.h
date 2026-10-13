@@ -1,5 +1,6 @@
 #ifndef API_H
 #define API_H
+#include <Arduino.h>
 
 #include "config.h"
 
@@ -13,6 +14,7 @@ bool uploadMeasurement(
 );
 
 bool downloadLedState(
+    String& mode,
     int& red,
     int& green,
     int& blue

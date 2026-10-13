@@ -1,6 +1,12 @@
 <?php
 
-$config = include("config.php");
+/*
+ * Toont en verwerkt het instellingenformulier; wijzigingen worden via
+ * config_store.php in het JSON-instellingenbestand opgeslagen.
+ */
+require_once __DIR__ . '/config_store.php';
+
+$config = load_app_config();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
@@ -41,17 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $config["display_enabled"] =
         isset($_POST["display_enabled"]);
 
-    $content =
-        "<?php\n\nreturn "
-        . var_export($config, true)
-        . ";\n";
-
-    file_put_contents(
-        "config.php",
-        $content
-    );
-
-    $saved = true;
+    try {
+        save_app_config($config);
+        $saved = true;
+    } catch (RuntimeException $error) {
+        error_log($error->getMessage());
+        $saveError = $error->getMessage();
+    }
 }
 
 ?>
@@ -93,6 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 <?php if(isset($saved)): ?>
 <div class="success">
     Instellingen opgeslagen
+</div>
+<?php endif; ?>
+<?php if(isset($saveError)): ?>
+<div class="error">
+    <?= htmlspecialchars($saveError, ENT_QUOTES, 'UTF-8'); ?>
 </div>
 <?php endif; ?>
 

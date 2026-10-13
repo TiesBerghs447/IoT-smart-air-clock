@@ -1,3 +1,4 @@
+/* Algemene vormgeving voor het dashboard en de instellingenpagina. */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
 
 :root {
@@ -346,14 +347,24 @@ h2 {
     transform: translateY(-1px);
 }
 
-.success {
+.success,
+.error {
     margin-bottom: 20px;
     padding: 13px 16px;
-    border: 1px solid #b8dfc8;
     border-radius: 6px;
+    text-align: center;
+}
+
+.success {
+    border: 1px solid #b8dfc8;
     background: #eaf6ee;
     color: var(--good);
-    text-align: center;
+}
+
+.error {
+    border: 1px solid #e5b8b5;
+    background: #fbefee;
+    color: var(--danger);
 }
 
 @keyframes appear {

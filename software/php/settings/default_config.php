@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Standaardwaarden voor instellingen; de geheime apparaat-API-sleutel blijft
+ * serverconfiguratie en wordt niet naar het JSON-instellingenbestand geschreven.
+ */
 return [
 
     "device_api_key" => "smartairclock2026api123456789012345",

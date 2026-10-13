@@ -4,16 +4,12 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <Arduino.h>
 
 const char* API_KEY =
     "smartairclock2026api123456789012345";
 
-bool downloadLedState(
-    String& mode,
-    int& red,
-    int& green,
-    int& blue
-)
+bool downloadLedState(String& mode, int& red, int& green, int& blue)
 {
     HTTPClient http;
 

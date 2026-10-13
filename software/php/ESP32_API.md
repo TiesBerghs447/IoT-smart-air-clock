@@ -1,3 +1,5 @@
+<!-- Documentatie voor de ESP API en voor het blijvend opslaan van instellingen op Render. -->
+
 # ESP32 API
 
 Configureer op de PHP-host een omgevingsvariabele `ESP_API_KEY` met minimaal 32 willekeurige tekens. Als de host geen eigen omgevingsvariabelen ondersteunt, zet de sleutel in `settings/config.php` bij `device_api_key`. De API weigert requests zolang geen geldige sleutel is ingesteld. Gebruik dezelfde sleutel in de firmware en stuur hem mee als `X-API-Key`; verstuur requests uitsluitend over HTTPS. De browserconfiguratie geeft de sleutel niet terug.
@@ -9,6 +11,12 @@ Configureer op de PHP-host een omgevingsvariabele `ESP_API_KEY` met minimaal 32 
 ## Instellingen ophalen
 
 `GET /settings/get_device_config.php` vereist dezelfde `X-API-Key`-header. Het JSON-antwoord bevat de CO2-grenzen, upload- en synchronisatie-intervallen, audio-instellingen inclusief `audio_track`, alarmtijd en hardware-uitgangen. Haal deze configuratie op bij het opstarten en daarna volgens `config_sync_interval`.
+
+## Instellingen opslaan op Render
+
+De webinstellingen worden opgeslagen als JSON, niet door `config.php` te herschrijven. Lokaal staat het bestand in `settings/config.json`. Voor instellingen die bewaard moeten blijven na een Render-herstart of nieuwe deployment, koppel je een Render Persistent Disk (bijvoorbeeld op `/var/data`) en stel je de omgevingsvariabele `SETTINGS_FILE` in op `/var/data/settings.json`. De map moet schrijfbaar zijn voor de PHP/Apache-gebruiker. Zonder Persistent Disk is het bestand op Render tijdelijk en kunnen opgeslagen wijzigingen verloren gaan bij een herstart of deployment.
+
+Het JSON-bestand bevat geen ESP API-sleutel. Die blijft in de omgevingsvariabele `ESP_API_KEY` of de serverconfiguratie.
 
 De MP3-keuze is een tracknummer van 1 t/m 10; de SD-kaartbestanden en de DFPlayer-bibliotheek moeten met die nummering overeenkomen. De status op het dashboard is gebaseerd op de laatste opgeslagen meting. Hij wordt offline zodra die ouder is dan drie uploadintervallen, met een minimumgrens van 30 seconden.
 

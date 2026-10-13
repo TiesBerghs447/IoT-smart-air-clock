@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Levert instellingen voor de ESP; vereist de apparaat-API-sleutel en geeft alleen
+ * de door de firmware gebruikte instellingen terug.
+ */
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/device_auth.php';
 
@@ -12,7 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 require_device_api_key();
 
-$config = include __DIR__ . '/config.php';
+require_once __DIR__ . '/config_store.php';
+
+$config = load_app_config();
 $deviceConfig = [
     'co2_good_max' => $config['co2_good_max'],
     'co2_warning_max' => $config['co2_warning_max'],

@@ -1,5 +1,9 @@
 <?php
 
+/*
+ * Serverinstellingen en terugvalwaarden, waaronder de API-sleutel.
+ * Bewerkbare instellingen worden centraal opgeslagen in config.json.
+ */
 return [
     // Set this on the server, or provide ESP_API_KEY as an environment variable.
     "device_api_key" => "smartairclock2026api123456789012345",

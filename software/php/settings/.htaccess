@@ -1,0 +1,4 @@
+# Voorkomt dat bezoekers het bestand met opgeslagen instellingen downloaden.
+<Files "config.json">
+    Require all denied
+</Files>
