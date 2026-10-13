@@ -8,6 +8,7 @@
 RGB rgb;
 
 static unsigned long lastRgbUpdate = 0;
+static unsigned long lastConfigSync = 0;
 
 String ledMode;
 
@@ -24,6 +25,7 @@ void setup()
     connectWiFi();
 
     downloadConfig();
+    lastConfigSync = millis();
     Serial.println("CONFIG:");
 
 Serial.print("co2GoodMax=");
@@ -43,17 +45,13 @@ Serial.println(deviceConfig.uploadInterval);
 void loop()
 {
     updateSensors();
-    downloadConfig();
-    Serial.println("CONFIG:");
+    if (millis() - lastConfigSync >=
+        (unsigned long)max(15, deviceConfig.configSyncInterval) * 1000UL)
+    {
+        downloadConfig();
+        lastConfigSync = millis();
+    }
 
-Serial.print("co2GoodMax=");
-Serial.println(deviceConfig.co2GoodMax);
-
-Serial.print("co2WarningMax=");
-Serial.println(deviceConfig.co2WarningMax);
-
-Serial.print("uploadInterval=");
-Serial.println(deviceConfig.uploadInterval);
     if(deviceConfig.audioEnabled)
     {
         // DFPlayer actief
@@ -128,5 +126,19 @@ Serial.println(deviceConfig.uploadInterval);
 
     Serial.print("Upload resultaat: ");
     Serial.println(success);
-    delay(30000);
+    unsigned long waitStarted = millis();
+    unsigned long uploadInterval =
+        (unsigned long)max(1, deviceConfig.uploadInterval) * 1000UL;
+
+    while (millis() - waitStarted < uploadInterval)
+    {
+        if (millis() - lastConfigSync >=
+            (unsigned long)max(15, deviceConfig.configSyncInterval) * 1000UL)
+        {
+            downloadConfig();
+            lastConfigSync = millis();
+        }
+
+        delay(100);
+    }
 }

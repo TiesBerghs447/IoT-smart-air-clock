@@ -22,7 +22,8 @@ async function loadConfig()
     {
         const response =
             await fetch(
-                "settings/get_config.php"
+                "settings/get_config.php",
+                { cache: "no-store" }
             );
 
         if (!response.ok)
@@ -132,9 +133,19 @@ function updateStatus(co2)
 
     updateData();
 
-    const refreshSeconds = Number(config?.refresh_interval ?? 5);
-    refreshTimer = setInterval(
-        updateData,
-        Math.min(Math.max(refreshSeconds, 1), 300) * 1000
-    );
+    scheduleDashboardRefresh();
 })();
+
+function scheduleDashboardRefresh()
+{
+    const refreshSeconds = Number(config?.refresh_interval ?? 5);
+    const delay = Math.min(Math.max(refreshSeconds, 1), 300) * 1000;
+
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(async () =>
+    {
+        await loadConfig();
+        await updateData();
+        scheduleDashboardRefresh();
+    }, delay);
+}

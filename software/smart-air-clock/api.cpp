@@ -51,8 +51,9 @@ bool downloadConfig()
     HTTPClient http;
     
     http.begin(
-        "https://iot-smart-air-clock-1.onrender.com/settings/get_config.php"
+        "https://iot-smart-air-clock-1.onrender.com/settings/get_device_config.php"
     );
+    http.addHeader("X-API-KEY", API_KEY);
 
     int responseCode =
         http.GET();
@@ -93,8 +94,8 @@ bool downloadConfig()
     deviceConfig.uploadInterval =
         doc["upload_interval"];
 
-    deviceConfig.refreshInterval =
-        doc["refresh_interval"];
+    deviceConfig.configSyncInterval =
+        doc["config_sync_interval"] | 60;
 
     deviceConfig.audioEnabled =
         doc["audio_enabled"];

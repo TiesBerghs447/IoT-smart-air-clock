@@ -9,6 +9,7 @@ void loadDefaultConfig()
 
     deviceConfig.uploadInterval = 30;
     deviceConfig.refreshInterval = 5;
+    deviceConfig.configSyncInterval = 60;
 
     deviceConfig.audioEnabled = true;
     deviceConfig.audioVolume = 20;

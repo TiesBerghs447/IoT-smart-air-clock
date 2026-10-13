@@ -8,6 +8,7 @@ struct Config
 
     int uploadInterval;
     int refreshInterval;
+    int configSyncInterval;
 
     bool audioEnabled;
     int audioVolume;

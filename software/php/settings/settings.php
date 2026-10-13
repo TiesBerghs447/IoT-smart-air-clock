@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         intval($_POST["upload_interval"]);
 
     $config["refresh_interval"] =
-        intval($_POST["refresh_interval"]);
+        max(1, min(300, intval($_POST["refresh_interval"] ?? 5)));
 
     $config["config_sync_interval"] =
         max(15, min(3600, intval($_POST["config_sync_interval"] ?? 60)));
@@ -144,6 +144,8 @@ value="<?= $config['upload_interval']; ?>">
 
 <input
 type="number"
+min="1"
+max="300"
 name="refresh_interval"
 value="<?= $config['refresh_interval']; ?>">
 
