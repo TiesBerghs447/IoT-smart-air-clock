@@ -24,6 +24,16 @@ void setup()
     connectWiFi();
 
     downloadConfig();
+    Serial.println("CONFIG:");
+
+Serial.print("co2GoodMax=");
+Serial.println(deviceConfig.co2GoodMax);
+
+Serial.print("co2WarningMax=");
+Serial.println(deviceConfig.co2WarningMax);
+
+Serial.print("uploadInterval=");
+Serial.println(deviceConfig.uploadInterval);
 
     initSensors();
 
@@ -33,7 +43,17 @@ void setup()
 void loop()
 {
     updateSensors();
-    
+    downloadConfig();
+    Serial.println("CONFIG:");
+
+Serial.print("co2GoodMax=");
+Serial.println(deviceConfig.co2GoodMax);
+
+Serial.print("co2WarningMax=");
+Serial.println(deviceConfig.co2WarningMax);
+
+Serial.print("uploadInterval=");
+Serial.println(deviceConfig.uploadInterval);
     if(deviceConfig.audioEnabled)
     {
         // DFPlayer actief

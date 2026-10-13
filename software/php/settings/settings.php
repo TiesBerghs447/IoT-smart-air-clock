@@ -243,17 +243,15 @@ Opslaan
 
 </button>
 
-reset_settings.php
-
 <button
-type="button"
-class="reset-btn">
+type="submit"
+class="reset-btn"
+formaction="reset_settings.php"
+formmethod="post">
 
 Fabrieksinstellingen
 
 </button>
-
-</a>
 
 </form>
 
