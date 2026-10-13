@@ -3,6 +3,17 @@
 #include "api.h"
 #include "globals.h"
 #include "sensors.h"
+#include "rgb.h"
+
+RGB rgb;
+
+static unsigned long lastRgbUpdate = 0;
+
+String ledMode;
+
+int remoteRed;
+int remoteGreen;
+int remoteBlue;
 
 void setup()
 {
@@ -15,6 +26,8 @@ void setup()
     downloadConfig();
 
     initSensors();
+
+    rgb.begin();
 }
 
 void loop()
@@ -35,19 +48,42 @@ void loop()
     {
         // deep sleep
     }
-    if(sensorData.co2 <
-    deviceConfig.co2GoodMax)
+    if(millis() - lastRgbUpdate > 1000)
     {
-        // groen
+    downloadLedState(
+        ledMode,
+        remoteRed,
+        remoteGreen,
+        remoteBlue
+    );
+
+    lastRgbUpdate = millis();
     }
-    else if(sensorData.co2 <
-            deviceConfig.co2WarningMax)
+
+    if(ledMode == "remote")
     {
-        // oranje
+        rgb.setColor(
+            remoteRed,
+            remoteGreen,
+            remoteBlue
+        );
     }
     else
     {
-        // rood
+        if(sensorData.co2 <
+        deviceConfig.co2GoodMax)
+        {
+            rgb.setGreen();
+        }
+        else if(sensorData.co2 <
+                deviceConfig.co2WarningMax)
+        {
+            rgb.setYellow();
+        }
+        else
+        {
+            rgb.setRed();
+        }
     }
     Serial.println("Meting:");
 

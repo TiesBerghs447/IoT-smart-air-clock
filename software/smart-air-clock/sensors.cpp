@@ -62,5 +62,5 @@ void updateSensors()
         bmp.readPressure() / 100.0;
 
     sensorData.co2 =
-        720; // testwaarde tot MH-Z19B binnen is
+        750; // testwaarde tot MH-Z19B binnen is
 }

@@ -8,6 +8,48 @@
 const char* API_KEY =
     "smartairclock2026api123456789012345";
 
+bool downloadLedState(
+    String& mode,
+    int& red,
+    int& green,
+    int& blue
+)
+{
+    HTTPClient http;
+
+    http.begin(
+        "https://iot-smart-air-clock-1.onrender.com/data/get_commando.php"
+    );
+
+    int responseCode = http.GET();
+
+    if(responseCode != 200)
+    {
+        http.end();
+        return false;
+    }
+
+    String payload = http.getString();
+
+    StaticJsonDocument<256> doc;
+
+    if(deserializeJson(doc, payload))
+    {
+        http.end();
+        return false;
+    }
+
+    mode = doc["led_mode"].as<String>();
+
+    red   = doc["red"];
+    green = doc["green"];
+    blue  = doc["blue"];
+
+    http.end();
+
+    return true;
+}
+
 bool downloadConfig()
 {
     HTTPClient http;
