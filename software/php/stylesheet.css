@@ -276,6 +276,27 @@ h2 {
     vertical-align: -2px;
 }
 
+.rgb-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.settings-card input[type="color"] {
+    width: 64px;
+    height: 48px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fbfdfb;
+    cursor: pointer;
+}
+
+#rgb-status {
+    color: var(--muted);
+}
+
 .settings-card input:focus-visible,
 .save-btn:focus-visible,
 .reset-btn:focus-visible,

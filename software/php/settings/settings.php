@@ -41,15 +41,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $config["display_enabled"] =
         isset($_POST["display_enabled"]);
 
-    $config["green_enabled"] =
-        isset($_POST["green_enabled"]);
-
-    $config["orange_enabled"] =
-        isset($_POST["orange_enabled"]);
-
-    $config["red_enabled"] =
-        isset($_POST["red_enabled"]);
-
     $content =
         "<?php\n\nreturn "
         . var_export($config, true)
@@ -226,11 +217,11 @@ value="<?= $config['alarm_minute']; ?>">
 
 <h2>RGB LED</h2>
 
-<label><input type="checkbox" name="green_enabled" <?= $config['green_enabled'] ? 'checked' : ''; ?>> Groen</label>
-
-<label><input type="checkbox" name="orange_enabled" <?= $config['orange_enabled'] ? 'checked' : ''; ?>> Oranje</label>
-
-<label><input type="checkbox" name="red_enabled" <?= $config['red_enabled'] ? 'checked' : ''; ?>> Rood</label>
+<label for="rgb-color">Kies een kleur</label>
+<div class="rgb-control">
+    <input type="color" id="rgb-color" value="#000000" aria-describedby="rgb-status">
+    <span id="rgb-status" role="status" aria-live="polite">Kleur laden...</span>
+</div>
 
 </div>
 
@@ -257,6 +248,8 @@ Fabrieksinstellingen
 </form>
 
 </div>
+
+<script src="settings.js"></script>
 
 </body>
 
