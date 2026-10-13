@@ -4,5 +4,6 @@ RUN apt-get update && apt-get install -y libpq-dev
 RUN docker-php-ext-install pdo pdo_pgsql
 
 COPY software/php/ /var/www/html/
+RUN chown www-data:www-data /var/www/html/data
 
 EXPOSE 80

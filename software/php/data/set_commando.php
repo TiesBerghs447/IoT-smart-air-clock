@@ -31,17 +31,32 @@ $data = [
     'blue' => $blue
 ];
 
-if (file_put_contents(
+$writeWarning = null;
+set_error_handler(
+    static function ($severity, $message) use (&$writeWarning) {
+        $writeWarning = $message;
+        return true;
+    }
+);
+
+$bytesWritten = file_put_contents(
     __DIR__ . '/command.json',
     json_encode(
         $data,
         JSON_PRETTY_PRINT
     ),
     LOCK_EX
-) === false)
+);
+restore_error_handler();
+
+if ($bytesWritten === false)
 {
+    if ($writeWarning !== null) {
+        error_log('Commando opslaan mislukt: ' . $writeWarning);
+    }
+
     http_response_code(500);
-    echo json_encode(['error' => 'Commando kon niet worden opgeslagen']);
+    echo json_encode(['error' => 'Commando kon niet worden opgeslagen; controleer de schrijfrechten van de data-map']);
     exit;
 }
 

@@ -19,6 +19,23 @@ function updateRemoteButton() {
     remoteToggle.setAttribute("aria-pressed", String(remoteMode));
 }
 
+async function readJson(response) {
+    const responseText = await response.text();
+    try {
+        return JSON.parse(responseText);
+    } catch (error) {
+        const detail = new DOMParser()
+            .parseFromString(responseText, "text/html")
+            .body.textContent
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 200);
+        throw new Error(
+            `Server gaf geen JSON terug (HTTP ${response.status})${detail ? `: ${detail}` : ""}`
+        );
+    }
+}
+
 async function sendCommand(mode) {
     const red = parseInt(colorInput.value.slice(1, 3), 16);
     const green = parseInt(colorInput.value.slice(3, 5), 16);
@@ -37,7 +54,7 @@ async function sendCommand(mode) {
         })
     });
 
-    const result = await response.json();
+    const result = await readJson(response);
     if (!response.ok || result.status !== "ok") {
         throw new Error(result.error || `HTTP ${response.status}`);
     }
@@ -50,7 +67,7 @@ async function loadColor() {
             throw new Error(`HTTP ${response.status}`);
         }
 
-        const command = await response.json();
+        const command = await readJson(response);
         colorInput.value = `#${toHex(command.red)}${toHex(command.green)}${toHex(command.blue)}`;
         remoteMode = command.led_mode === "remote";
         updateRemoteButton();
