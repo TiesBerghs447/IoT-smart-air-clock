@@ -220,7 +220,10 @@ value="<?= $config['alarm_minute']; ?>">
 <label for="rgb-color">Kies een kleur</label>
 <div class="rgb-control">
     <input type="color" id="rgb-color" value="#000000" aria-describedby="rgb-status">
-    <span id="rgb-status" role="status" aria-live="polite">Kleur laden...</span>
+    <div class="rgb-actions">
+        <button class="save-btn" type="button" id="remote-toggle" aria-pressed="false">Remote mode inschakelen</button>
+        <span id="rgb-status" role="status" aria-live="polite">Kleur laden...</span>
+    </div>
 </div>
 
 </div>

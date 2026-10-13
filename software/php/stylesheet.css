@@ -278,9 +278,15 @@ h2 {
 
 .rgb-control {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     margin-top: 8px;
+}
+
+.rgb-actions {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
 }
 
 .settings-card input[type="color"] {
@@ -295,6 +301,10 @@ h2 {
 
 #rgb-status {
     color: var(--muted);
+}
+
+.rgb-actions .save-btn {
+    margin: 0;
 }
 
 .settings-card input:focus-visible,
