@@ -26,6 +26,10 @@
         </li>
 
         <li>
+            <a href="alarms.php">Alarmen</a>
+        </li>
+
+        <li>
             <a href="settings/settings.php">Instellingen</a>
         </li>
 

@@ -16,6 +16,7 @@
 
         <ul class="nav-links">
             <li><a href="index.php">Dashboard</a></li>
+            <li><a href="alarms.php">Alarmen</a></li>
             <li><a href="history.php" aria-current="page">Historiek</a></li>
             <li><a href="settings/settings.php">Instellingen</a></li>
         </ul>

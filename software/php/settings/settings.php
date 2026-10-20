@@ -82,6 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
     <ul class="nav-links">
         <li><a href="../index.php">Dashboard</a></li>
+        <li><a href="../alarms.php">Alarmen</a></li>
         <li><a href="../history.php">Historiek</a></li>
         <li><a href="settings.php" aria-current="page">Instellingen</a></li>
     </ul>

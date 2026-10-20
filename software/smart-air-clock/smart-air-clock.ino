@@ -4,6 +4,11 @@
 #include "globals.h"
 #include "sensors.h"
 #include "rgb.h"
+#include "display.h"
+#include "buttons.h"
+#include "alarm.h"
+
+#include <time.h>
 
 RGB rgb;
 
@@ -28,117 +33,448 @@ void setup()
     lastConfigSync = millis();
     Serial.println("CONFIG:");
 
-Serial.print("co2GoodMax=");
-Serial.println(deviceConfig.co2GoodMax);
+    Serial.print("co2GoodMax=");
+    Serial.println(deviceConfig.co2GoodMax);
 
-Serial.print("co2WarningMax=");
-Serial.println(deviceConfig.co2WarningMax);
+    Serial.print("co2WarningMax=");
+    Serial.println(deviceConfig.co2WarningMax);
 
-Serial.print("uploadInterval=");
-Serial.println(deviceConfig.uploadInterval);
+    Serial.print("uploadInterval=");
+    Serial.println(deviceConfig.uploadInterval);
 
     initSensors();
 
     rgb.begin();
+
+    configTime(
+        0,
+        0,
+        "pool.ntp.org"
+    );
+
+    setenv(
+        "TZ",
+        "CET-1CEST,M3.5.0,M10.5.0/3",
+        1
+    );
+
+    tzset();
+
+    struct tm timeinfo;
+
+    while(!getLocalTime(&timeinfo))
+    {
+        Serial.println("Wachten op tijd...");
+        delay(500);
+    }
+
+    Serial.println("Tijd ontvangen");
+    initDisplay();
+    initButtons();
+    initAlarm();
 }
 
 void loop()
 {
-    updateSensors();
-    if (millis() - lastConfigSync >=
-        (unsigned long)max(15, deviceConfig.configSyncInterval) * 1000UL)
+    static unsigned long lastDisplayUpdate = 0;
+    static unsigned long lastSensorUpdate = 0;
+    static unsigned long lastUpload = 0;
+
+    unsigned long now = millis();
+
+    // ==================================================
+    // BUTTONS
+    // ==================================================
+
+    updateButtons();
+
+    // ==================================================
+    // ALARM MENU
+    // ==================================================
+
+    if(
+        setLongPressed() &&
+        getAlarmMenuState() ==
+        ALARM_NORMAL
+    )
     {
-        downloadConfig();
-        lastConfigSync = millis();
+        setAlarmMenuState(
+            ALARM_LIST
+        );
     }
 
-    if(deviceConfig.audioEnabled)
+    // Alarm lijst
+
+    if(
+        getAlarmMenuState() ==
+        ALARM_LIST
+    )
     {
-        // DFPlayer actief
+        if(upPressed())
+        {
+            nextAlarm();
+        }
+
+        if(setPressed())
+        {
+            startEditAlarm();
+
+            setAlarmMenuState(
+                ALARM_SET_HOUR
+            );
+        }
+
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_NORMAL
+            );
+        }
+
+        if(
+            powerLongPressed()
+            &&
+            !isNewAlarmSelected()
+        )
+        {
+            setAlarmMenuState(
+                ALARM_DELETE
+            );
+        }
     }
 
-    if(deviceConfig.greenEnabled)
+
+    // Uur instellen
+
+    if(
+        getAlarmMenuState() ==
+        ALARM_SET_HOUR
+    )
     {
-        // groene LED
+        if(
+            upPressed() ||
+            upHeld()
+        )
+        {
+            increaseEditHour();
+        }
+
+        if(setPressed())
+        {
+            setAlarmMenuState(
+                ALARM_SET_MINUTE
+            );
+        }
+
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
     }
 
-    if(deviceConfig.deviceEnabled == false)
+    // Minuten instellen
+
+    if(
+        getAlarmMenuState() ==
+        ALARM_SET_MINUTE
+    )
     {
-        // deep sleep
+        if(
+            upPressed() ||
+            upHeld()
+        )
+        {
+            increaseEditMinute();
+        }
+
+        if(setPressed())
+        {
+            setAlarmMenuState(
+                ALARM_SET_ENABLED
+            );
+        }
+
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
     }
-    if(millis() - lastRgbUpdate > 1000)
+
+    // Aan / Uit
+
+    if(
+        getAlarmMenuState() ==
+        ALARM_SET_ENABLED
+    )
     {
-    downloadLedState(
-        ledMode,
-        remoteRed,
-        remoteGreen,
-        remoteBlue
+        if(upPressed())
+        {
+            toggleEditEnabled();
+        }
+
+        if(setPressed())
+        {
+            saveEditedAlarm();
+
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
+
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
+    }
+    if(
+        getAlarmMenuState() ==
+        ALARM_DELETE
+    )
+    {
+        if(setPressed())
+        {
+            removeAlarm(
+                getSelectedAlarm()
+            );
+
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
+
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
+    }
+
+    // ==================================================
+    // ALARM ENGINE
+    // ==================================================
+
+    updateAlarm();
+
+    // STOP
+
+    if(isAlarmRinging())
+    {
+        if(powerPressed())
+        {
+            stopAlarm();
+        }
+
+        if(upPressed())
+        {
+            startSnooze();
+        }
+    }
+static AlarmMenuState lastState =
+    ALARM_NORMAL;
+
+if(
+    getAlarmMenuState() !=
+    lastState
+)
+{
+    Serial.print("STATE = ");
+    Serial.println(
+        getAlarmMenuState()
     );
 
-    lastRgbUpdate = millis();
+    lastState =
+        getAlarmMenuState();
+}
+    // ==================================================
+    // ALARM RGB
+    // ==================================================
+
+    if(isAlarmRinging())
+    {
+        static unsigned long alarmBlinkTimer = 0;
+        static bool blinkState = false;
+
+        if(
+            millis() -
+            alarmBlinkTimer >=
+            500
+        )
+        {
+            alarmBlinkTimer =
+                millis();
+
+            blinkState =
+                !blinkState;
+
+            if(blinkState)
+            {
+                rgb.setRed();
+            }
+            else
+            {
+                rgb.off();
+            }
+        }
     }
 
-    if(ledMode == "remote")
+    // ==================================================
+    // DISPLAY
+    // ==================================================
+
+    if(
+        now - lastDisplayUpdate >=
+        100
+    )
     {
-        rgb.setColor(
+        if(
+            getAlarmMenuState() ==
+            ALARM_NORMAL
+        )
+        {
+            updateDisplay(
+                sensorData.temperature,
+                sensorData.humidity,
+                sensorData.co2
+            );
+        }
+        else
+        {
+            updateAlarmDisplay();
+        }
+
+        lastDisplayUpdate =
+            now;
+    }
+
+    // ==================================================
+    // SENSOREN
+    // ==================================================
+
+    if(
+        now - lastSensorUpdate >=
+        (unsigned long)max(
+            1,
+            deviceConfig.uploadInterval
+        ) * 1000UL
+    )
+    {
+        updateSensors();
+
+        lastSensorUpdate =
+            now;
+    }
+
+    // ==================================================
+    // CONFIG DOWNLOAD
+    // ==================================================
+
+    if(
+        now - lastConfigSync >=
+        (unsigned long)max(
+            15,
+            deviceConfig.configSyncInterval
+        ) * 1000UL
+    )
+    {
+        downloadConfig();
+
+        lastConfigSync =
+            now;
+    }
+
+    // ==================================================
+    // RGB DOWNLOAD
+    // ==================================================
+
+    if(
+        now - lastRgbUpdate >=
+        1000
+    )
+    {
+        downloadLedState(
+            ledMode,
             remoteRed,
             remoteGreen,
             remoteBlue
         );
+
+        lastRgbUpdate =
+            now;
     }
-    else
+
+    // ==================================================
+    // NORMALE RGB MODUS
+    // ==================================================
+
+    if(!isAlarmRinging())
     {
-        if(sensorData.co2 <
-        deviceConfig.co2GoodMax)
+        if(ledMode == "remote")
         {
-            rgb.setGreen();
-        }
-        else if(sensorData.co2 <
-                deviceConfig.co2WarningMax)
-        {
-            rgb.setYellow();
+            rgb.setColor(
+                remoteRed,
+                remoteGreen,
+                remoteBlue
+            );
         }
         else
         {
-            rgb.setRed();
+            if(
+                sensorData.co2 <
+                deviceConfig.co2GoodMax
+            )
+            {
+                rgb.setGreen();
+            }
+            else if(
+                sensorData.co2 <
+                deviceConfig.co2WarningMax
+            )
+            {
+                rgb.setYellow();
+            }
+            else
+            {
+                rgb.setRed();
+            }
         }
     }
-    Serial.println("Meting:");
 
-    Serial.print("Temp: ");
-    Serial.println(sensorData.temperature);
+    // ==================================================
+    // UPLOAD
+    // ==================================================
 
-    Serial.print("Humidity: ");
-    Serial.println(sensorData.humidity);
-
-    Serial.print("Pressure: ");
-    Serial.println(sensorData.pressure);
-
-    Serial.println("Upload starten...");
-
-    bool success =
-    uploadMeasurement(
-    sensorData.temperature,
-    sensorData.humidity,
-    sensorData.pressure,
-    sensorData.co2
-    );
-
-    Serial.print("Upload resultaat: ");
-    Serial.println(success);
-    unsigned long waitStarted = millis();
-    unsigned long uploadInterval =
-        (unsigned long)max(1, deviceConfig.uploadInterval) * 1000UL;
-
-    while (millis() - waitStarted < uploadInterval)
+    if(
+        now - lastUpload >=
+        (unsigned long)max(
+            1,
+            deviceConfig.uploadInterval
+        ) * 1000UL
+    )
     {
-        if (millis() - lastConfigSync >=
-            (unsigned long)max(15, deviceConfig.configSyncInterval) * 1000UL)
-        {
-            downloadConfig();
-            lastConfigSync = millis();
-        }
+        bool success =
+            uploadMeasurement(
+                sensorData.temperature,
+                sensorData.humidity,
+                sensorData.pressure,
+                sensorData.co2
+            );
 
-        delay(100);
+        Serial.print(
+            "Upload resultaat: "
+        );
+
+        Serial.println(
+            success
+        );
+
+        lastUpload =
+            now;
     }
 }

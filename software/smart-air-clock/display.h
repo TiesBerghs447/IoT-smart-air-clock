@@ -1,10 +1,17 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#include <Arduino.h>
+#include "alarm.h"
 
 void initDisplay();
-void updateDisplay();
+
+void updateDisplay(
+    float temperature,
+    float humidity,
+    int co2
+);
+
+void updateAlarmDisplay();
 
 #endif

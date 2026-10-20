@@ -2,4 +2,3 @@
 .idea/
 __pycache__/
 *.log
-/software/smart-air-clock/network.cpp

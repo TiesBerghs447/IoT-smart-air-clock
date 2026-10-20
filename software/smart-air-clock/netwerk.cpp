@@ -1,33 +1,47 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiManager.h>
 
 #include "netwerk.h"
 
-const char* WIFI_SSID = "berghs";
-const char* WIFI_PASSWORD = "babbelroos";
-
 void connectWiFi()
 {
-    Serial.println("Verbinden met WiFi...");
+    WiFiManager wm;
 
-    WiFi.begin(
-        WIFI_SSID,
-        WIFI_PASSWORD
+    Serial.println(
+        "Verbinden met WiFi..."
     );
 
-    while(WiFi.status() != WL_CONNECTED)
+    bool result =
+        wm.autoConnect(
+            "SmartAirClock"
+        );
+
+    if(!result)
     {
-        delay(500);
-        Serial.print(".");
+        Serial.println(
+            "WiFi mislukt"
+        );
+
+        ESP.restart();
     }
 
-    Serial.println();
-    Serial.println("WiFi verbonden");
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
+    Serial.println(
+        "WiFi verbonden"
+    );
+
+    Serial.print(
+        "IP: "
+    );
+
+    Serial.println(
+        WiFi.localIP()
+    );
 }
 
 bool wifiConnected()
 {
-    return WiFi.status() == WL_CONNECTED;
+    return
+        WiFi.status() ==
+        WL_CONNECTED;
 }

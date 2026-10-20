@@ -36,4 +36,25 @@ $deviceConfig = [
     'red_enabled' => $config['red_enabled'],
 ];
 
+require_once __DIR__ . '/db.php';
+
+$alarms = [];
+
+$result = pg_query(
+    $db,
+    "
+    SELECT
+        hour,
+        minute
+    FROM alarms
+"
+);
+
+if ($result) {
+    while ($row = pg_fetch_assoc($result)) {
+        $alarms[] = $row;
+    }
+}
+$deviceConfig['alarms'] = $alarms;
+
 echo json_encode($deviceConfig);
