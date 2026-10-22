@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             $insert->execute([
                 ':hour' => $hour,
                 ':minute' => $minute,
-                ':enabled' => $enabled
+                ':enabled' => $enabled ? 'true' : 'false'
             ]);
 
             header(
@@ -261,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 );
 
             $toggle->execute([
-                ':enabled' => $enabled,
+                ':enabled' => $enabled ? 'true' : 'false',
                 ':id' => $id
             ]);
 
@@ -473,7 +473,6 @@ catch (Throwable $error)
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="toggle">
                                 <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
-                                <input type="hidden" name="enabled" value="0">
                                 <label class="alarm-toggle-label">
                                     <input
                                         type="checkbox"
