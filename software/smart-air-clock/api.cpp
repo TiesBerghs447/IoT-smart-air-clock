@@ -192,6 +192,20 @@ bool downloadConfig()
         Serial.println(
             getAlarmCount()
         );
+
+        for(int i = 0; i < getAlarmCount(); i++)
+        {
+            Alarm alarm =
+                getAlarm(i);
+
+            Serial.printf(
+                "Alarm %d: %02d:%02d %s\n",
+                i + 1,
+                alarm.hour,
+                alarm.minute,
+                alarm.enabled ? "ON" : "OFF"
+            );
+        }
     }
 
     http.end();
@@ -272,6 +286,9 @@ bool uploadMeasurement(
 
     String response =
         http.getString();
+
+    Serial.println("CONFIG JSON:");
+    Serial.println(payload);
 
     Serial.print(
         "Response: "
