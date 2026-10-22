@@ -5,10 +5,20 @@
  * config_store.php in het JSON-instellingenbestand opgeslagen.
  */
 require_once __DIR__ . '/config_store.php';
+require_once __DIR__ . '/web_auth.php';
+web_auth_require();
+$webAuthCsrfToken = web_auth_csrf_token();
 
 $config = load_app_config();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST")
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST"
+    && !web_auth_validate_csrf()
+) {
+    http_response_code(400);
+    $saveError = 'De sessie is verlopen. Vernieuw de pagina en probeer opnieuw.';
+}
+elseif ($_SERVER["REQUEST_METHOD"] === "POST")
 {
     $config["co2_good_max"] =
         intval($_POST["co2_good_max"]);
@@ -85,6 +95,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         <li><a href="../alarms.php">Alarmen</a></li>
         <li><a href="../history.php">Historiek</a></li>
         <li><a href="settings.php" aria-current="page">Instellingen</a></li>
+        <li>
+            <form method="post" action="../logout.php">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($webAuthCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <button class="logout-btn" type="submit">Uitloggen</button>
+            </form>
+        </li>
     </ul>
 
 </nav>
@@ -105,6 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 <?php endif; ?>
 
 <form method="POST">
+<input type="hidden" name="csrf_token" value="<?= htmlspecialchars($webAuthCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
 
 <div class="settings-card">
 

@@ -100,6 +100,74 @@ input {
     width: min(100%, 960px);
 }
 
+.login-container {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 24px;
+}
+
+.login-card {
+    width: min(100%, 420px);
+    padding: 32px;
+}
+
+.login-card .logo {
+    text-align: center;
+}
+
+.login-card h1 {
+    margin: 22px 0 4px;
+    text-align: center;
+}
+
+.login-card .subtitle {
+    margin-bottom: 24px;
+}
+
+.login-form {
+    display: grid;
+    gap: 10px;
+}
+
+.login-form label {
+    margin-top: 8px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.login-form input {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fbfdfb;
+    color: var(--ink);
+}
+
+.login-form .save-btn {
+    margin: 14px 0 0;
+}
+
+.logout-btn {
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+}
+
+.logout-btn:hover,
+.logout-btn:focus-visible {
+    border-color: var(--green);
+    color: var(--green);
+}
+
 .alarm-container {
     width: min(100%, 760px);
 }

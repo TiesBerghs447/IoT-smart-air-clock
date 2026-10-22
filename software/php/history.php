@@ -1,3 +1,7 @@
+require_once __DIR__ . '/settings/web_auth.php';
+web_auth_require();
+$webAuthCsrfToken = web_auth_csrf_token();
+?>
 <!DOCTYPE html>
 <html lang="nl">
 
@@ -19,6 +23,12 @@
             <li><a href="alarms.php">Alarmen</a></li>
             <li><a href="history.php" aria-current="page">Historiek</a></li>
             <li><a href="settings/settings.php">Instellingen</a></li>
+            <li>
+                <form method="post" action="logout.php">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($webAuthCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                    <button class="logout-btn" type="submit">Uitloggen</button>
+                </form>
+            </li>
         </ul>
     </nav>
 
