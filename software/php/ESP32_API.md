@@ -10,7 +10,7 @@ Configureer op de PHP-host een omgevingsvariabele `ESP_API_KEY` met minimaal 32 
 
 ## Instellingen ophalen
 
-`GET /settings/get_device_config.php` vereist dezelfde `X-API-Key`-header. Het JSON-antwoord bevat de CO2-grenzen, upload- en synchronisatie-intervallen, audio-instellingen inclusief `audio_track`, alarmtijd en hardware-uitgangen. De firmware haalt deze configuratie op bij het opstarten en daarna volgens `config_sync_interval`; na een firmware-update moet de ESP opnieuw geflasht worden om dit synchronisatiegedrag te gebruiken.
+`GET /settings/get_device_config.php` vereist dezelfde `X-API-Key`-header. Het JSON-antwoord bevat de CO2-grenzen, upload- en synchronisatie-intervallen, audio-instellingen inclusief `audio_track`, hardware-uitgangen en een `alarms`-array met voor elk alarm `hour`, `minute` en `enabled`. De ESP laadt de alarmstatus uit deze array. Een aan/uit-wijziging op de alarmenpagina wordt in PostgreSQL opgeslagen en is op het apparaat actief na de volgende configuratie-update. De firmware haalt deze configuratie op bij het opstarten en daarna volgens `config_sync_interval` (standaard 60 seconden); na een firmware-update moet de ESP opnieuw geflasht worden om dit synchronisatiegedrag te gebruiken.
 
 `refresh_interval` bepaalt hoe vaak het dashboard nieuwe metingen ophaalt. Het dashboard haalt de instelling tijdens het verversen opnieuw op, zodat een opgeslagen wijziging zonder handmatig herladen van de dashboardpagina actief wordt.
 

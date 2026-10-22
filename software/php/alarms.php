@@ -61,6 +61,24 @@ function alarm_posted_time(
     return $time;
 }
 
+function alarm_posted_enabled(): bool
+{
+    $value =
+        $_POST['enabled'] ?? '0';
+
+    if (
+        !is_string($value)
+        || !in_array($value, ['0', '1'], true)
+    )
+    {
+        throw new InvalidArgumentException(
+            'Ongeldige alarmstatus.'
+        );
+    }
+
+    return $value === '1';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
     try
@@ -102,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 );
 
             $enabled =
-                isset($_POST['enabled']);
+                alarm_posted_enabled();
 
             $count =
                 (int)$connection
@@ -184,9 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     59
                 );
 
-            $enabled =
-                isset($_POST['enabled']);
-
             $duplicate =
                 $connection->prepare(
                     'SELECT COUNT(*)
@@ -216,20 +231,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     'UPDATE alarms
                      SET
                         hour = :hour,
-                        minute = :minute,
-                        enabled = :enabled
+                        minute = :minute
                      WHERE id = :id'
                 );
 
             $update->execute([
                 ':hour' => $hour,
                 ':minute' => $minute,
-                ':enabled' => $enabled,
                 ':id' => $id
             ]);
 
             header(
                 'Location: alarms.php?status=updated'
+            );
+
+            exit;
+        }
+
+        if ($action === 'toggle')
+        {
+            $enabled =
+                alarm_posted_enabled();
+
+            $toggle =
+                $connection->prepare(
+                    'UPDATE alarms
+                     SET enabled = :enabled
+                     WHERE id = :id'
+                );
+
+            $toggle->execute([
+                ':enabled' => $enabled,
+                ':id' => $id
+            ]);
+
+            if ($toggle->rowCount() === 0)
+            {
+                throw new InvalidArgumentException(
+                    'Dit alarm bestaat niet meer.'
+                );
+            }
+
+            header(
+                'Location: alarms.php?status=toggled'
             );
 
             exit;
@@ -283,6 +327,7 @@ if (
     $messages = [
         'added' => 'Alarm toegevoegd.',
         'updated' => 'Alarm gewijzigd.',
+        'toggled' => 'Alarmstatus opgeslagen. De ESP synchroniseert de wijziging bij de volgende configuratie-update.',
         'deleted' => 'Alarm verwijderd.'
     ];
 
@@ -316,7 +361,7 @@ try
                 id,
                 hour,
                 minute,
-                enabled
+                CASE WHEN enabled THEN 1 ELSE 0 END AS enabled
             FROM alarms
             ORDER BY hour, minute
             '
@@ -382,6 +427,11 @@ catch (Throwable $error)
                             <input type="number" name="minute" min="0" max="59" required>
                         </label>
                     </div>
+                    <label class="alarm-toggle-label">
+                        <input type="hidden" name="enabled" value="0">
+                        <input type="checkbox" name="enabled" value="1" checked>
+                        Alarm staat aan
+                    </label>
                     <button class="save-btn" type="submit">Alarm toevoegen</button>
                 </form>
             <?php else: ?>
@@ -399,6 +449,7 @@ catch (Throwable $error)
                         <?php
                         $hour = (int) $alarm['hour'];
                         $minute = (int) $alarm['minute'];
+                        $enabled = (bool) $alarm['enabled'];
                         ?>
                         <div class="alarm-item">
                             <div class="alarm-display">
@@ -407,8 +458,7 @@ catch (Throwable $error)
                             <form method="post" class="alarm-form">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="update">
-                                <input type="hidden" name="old_hour" value="<?= $hour; ?>">
-                                <input type="hidden" name="old_minute" value="<?= $minute; ?>">
+                                <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
                                 <div class="alarm-time-fields">
                                     <label>Uur
                                         <input type="number" name="hour" min="0" max="23" value="<?= $hour; ?>" required>
@@ -419,11 +469,28 @@ catch (Throwable $error)
                                 </div>
                                 <button class="save-btn" type="submit">Wijzigen</button>
                             </form>
+                            <form method="post" class="alarm-toggle-form">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                <input type="hidden" name="action" value="toggle">
+                                <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
+                                <input type="hidden" name="enabled" value="0">
+                                <label class="alarm-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        name="enabled"
+                                        value="1"
+                                        <?= $enabled ? 'checked' : ''; ?>
+                                        onchange="this.form.submit()">
+                                    Alarm staat <?= $enabled ? 'aan' : 'uit'; ?>
+                                </label>
+                                <noscript>
+                                    <button class="save-btn" type="submit">Status opslaan</button>
+                                </noscript>
+                            </form>
                             <form method="post" class="alarm-delete-form" onsubmit="return confirm('Dit alarm verwijderen?');">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="old_hour" value="<?= $hour; ?>">
-                                <input type="hidden" name="old_minute" value="<?= $minute; ?>">
+                                <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
                                 <button class="reset-btn" type="submit">Verwijderen</button>
                             </form>
                         </div>
