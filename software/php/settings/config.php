@@ -1,35 +1,54 @@
 <?php
 
 /*
- * Serverinstellingen en terugvalwaarden, waaronder de API-sleutel.
- * Bewerkbare instellingen worden centraal opgeslagen in config.json.
+ * Serverinstellingen en terugvalwaarden.
+ * Alarmen worden niet meer hier opgeslagen,
+ * maar in de PostgreSQL tabel "alarms".
  */
+
 return [
-    // Set this on the server, or provide ESP_API_KEY as an environment variable.
-    "device_api_key" => "smartairclock2026api123456789012345",
 
-    // CO2 thresholds in ppm.
-    "co2_good_max" => 800,
-    "co2_warning_max" => 1200,
+    // API sleutel voor de ESP32
+    "device_api_key" =>
+        "smartairclock2026api123456789012345",
 
-    // Sensor upload and dashboard refresh intervals in seconds.
-    "upload_interval" => 30,
-    "refresh_interval" => 5,
-    "config_sync_interval" => 60,
+    // CO2 drempelwaarden
+    "co2_good_max" =>
+        800,
 
-    // Audio settings.
-    "audio_enabled" => true,
-    "audio_volume" => 20,
-    "audio_track" => 1,
+    "co2_warning_max" =>
+        1200,
 
-    // Alarm time in 24-hour format.
-    "alarm_enabled" => true,
-    "alarm_hour" => 7,
-    "alarm_minute" => 0,
+    // Intervallen (seconden)
+    "upload_interval" =>
+        30,
 
-    // Hardware outputs.
-    "display_enabled" => true,
-    "green_enabled" => true,
-    "orange_enabled" => true,
-    "red_enabled" => true,
+    "refresh_interval" =>
+        5,
+
+    "config_sync_interval" =>
+        60,
+
+    // Audio
+    "audio_enabled" =>
+        true,
+
+    "audio_volume" =>
+        20,
+
+    "audio_track" =>
+        1,
+
+    // Hardware
+    "display_enabled" =>
+        true,
+
+    "green_enabled" =>
+        true,
+
+    "orange_enabled" =>
+        true,
+
+    "red_enabled" =>
+        true
 ];

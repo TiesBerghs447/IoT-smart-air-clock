@@ -93,4 +93,6 @@ void saveAlarms();
 
 void loadAlarms();
 
+void clearAlarms();
+
 #endif

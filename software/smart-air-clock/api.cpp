@@ -1,5 +1,6 @@
 #include "api.h"
 #include "config.h"
+#include "alarm.h"
 
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -9,7 +10,12 @@
 const char* API_KEY =
     "smartairclock2026api123456789012345";
 
-bool downloadLedState(String& mode, int& red, int& green, int& blue)
+bool downloadLedState(
+    String& mode,
+    int& red,
+    int& green,
+    int& blue
+)
 {
     HTTPClient http;
 
@@ -17,7 +23,8 @@ bool downloadLedState(String& mode, int& red, int& green, int& blue)
         "https://iot-smart-air-clock-1.onrender.com/data/get_commando.php"
     );
 
-    int responseCode = http.GET();
+    int responseCode =
+        http.GET();
 
     if(responseCode != 200)
     {
@@ -25,21 +32,34 @@ bool downloadLedState(String& mode, int& red, int& green, int& blue)
         return false;
     }
 
-    String payload = http.getString();
+    String payload =
+        http.getString();
 
     StaticJsonDocument<256> doc;
 
-    if(deserializeJson(doc, payload))
+    if(
+        deserializeJson(
+            doc,
+            payload
+        )
+    )
     {
         http.end();
         return false;
     }
 
-    mode = doc["led_mode"].as<String>();
+    mode =
+        doc["led_mode"]
+        .as<String>();
 
-    red   = doc["red"];
-    green = doc["green"];
-    blue  = doc["blue"];
+    red =
+        doc["red"];
+
+    green =
+        doc["green"];
+
+    blue =
+        doc["blue"];
 
     http.end();
 
@@ -49,19 +69,28 @@ bool downloadLedState(String& mode, int& red, int& green, int& blue)
 bool downloadConfig()
 {
     HTTPClient http;
-    
+
     http.begin(
         "https://iot-smart-air-clock-1.onrender.com/settings/get_device_config.php"
     );
-    http.addHeader("X-API-KEY", API_KEY);
+
+    http.addHeader(
+        "X-API-KEY",
+        API_KEY
+    );
 
     int responseCode =
         http.GET();
 
-    Serial.print("Config HTTP code: ");
-    Serial.println(responseCode);
+    Serial.print(
+        "Config HTTP code: "
+    );
 
-    if (responseCode != 200)
+    Serial.println(
+        responseCode
+    );
+
+    if(responseCode != 200)
     {
         http.end();
         return false;
@@ -70,7 +99,7 @@ bool downloadConfig()
     String payload =
         http.getString();
 
-    StaticJsonDocument<2048> doc;
+    StaticJsonDocument<4096> doc;
 
     DeserializationError error =
         deserializeJson(
@@ -78,10 +107,14 @@ bool downloadConfig()
             payload
         );
 
-    if (error)
+    if(error)
     {
-        Serial.println("JSON fout");
+        Serial.println(
+            "JSON fout"
+        );
+
         http.end();
+
         return false;
     }
 
@@ -103,15 +136,6 @@ bool downloadConfig()
     deviceConfig.audioVolume =
         doc["audio_volume"];
 
-    deviceConfig.alarmEnabled =
-        doc["alarm_enabled"];
-
-    deviceConfig.alarmHour =
-        doc["alarm_hour"];
-
-    deviceConfig.alarmMinute =
-        doc["alarm_minute"];
-
     deviceConfig.displayEnabled =
         doc["display_enabled"];
 
@@ -124,8 +148,51 @@ bool downloadConfig()
     deviceConfig.redEnabled =
         doc["red_enabled"];
 
-    deviceConfig.deviceEnabled =
-        doc["device_enabled"];
+    // =========================
+    // Alarm synchronisatie
+    // =========================
+
+    if(doc.containsKey("alarms"))
+    {
+        clearAlarms();
+
+        JsonArray alarms =
+            doc["alarms"]
+            .as<JsonArray>();
+
+        for(
+            JsonObject alarm :
+            alarms
+        )
+        {
+            int hour =
+                alarm["hour"];
+
+            int minute =
+                alarm["minute"];
+
+            bool enabled =
+                alarm["enabled"];
+
+            addAlarm(
+                hour,
+                minute
+            );
+
+            enableAlarm(
+                getAlarmCount() - 1,
+                enabled
+            );
+        }
+
+        Serial.print(
+            "Alarmen geladen: "
+        );
+
+        Serial.println(
+            getAlarmCount()
+        );
+    }
 
     http.end();
 
@@ -142,8 +209,9 @@ bool uploadMeasurement(
     HTTPClient http;
 
     http.begin(
-    "https://iot-smart-air-clock-1.onrender.com/data/save_data.php"
-);
+        "https://iot-smart-air-clock-1.onrender.com/data/save_data.php"
+    );
+
     http.addHeader(
         "Content-Type",
         "application/x-www-form-urlencoded"
@@ -156,36 +224,65 @@ bool uploadMeasurement(
 
     String payload =
         "temperature=" +
-        String(temperature, 2);
+        String(
+            temperature,
+            2
+        );
 
     payload +=
         "&humidity=" +
-        String(humidity, 2);
+        String(
+            humidity,
+            2
+        );
 
     payload +=
         "&pressure=" +
-        String(pressure, 2);
+        String(
+            pressure,
+            2
+        );
 
     payload +=
         "&co2=" +
-        String(co2);
+        String(
+            co2
+        );
 
-    Serial.println("Payload:");
-    Serial.println(payload);
+    Serial.println(
+        "Payload:"
+    );
+
+    Serial.println(
+        payload
+    );
 
     int responseCode =
-        http.POST(payload);
+        http.POST(
+            payload
+        );
 
-    Serial.print("HTTP code: ");
-    Serial.println(responseCode);
+    Serial.print(
+        "HTTP code: "
+    );
+
+    Serial.println(
+        responseCode
+    );
 
     String response =
         http.getString();
 
-    Serial.print("Response: ");
-    Serial.println(response);
+    Serial.print(
+        "Response: "
+    );
+
+    Serial.println(
+        response
+    );
 
     http.end();
 
-    return responseCode == 200;
+    return
+        responseCode == 200;
 }

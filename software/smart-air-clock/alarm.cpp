@@ -521,3 +521,9 @@ void loadAlarms()
         );
     }
 }
+
+void clearAlarms()
+{
+    alarmCount = 0;
+    saveAlarms();
+}
