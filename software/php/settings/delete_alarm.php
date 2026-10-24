@@ -1,9 +1,9 @@
 <?php
 
-require_once __DIR__ . '/settings/device_auth.php';
+require_once __DIR__ . '/device_auth.php';
 require_device_api_key();
 
-require_once __DIR__ . '/settings/database.php';
+require_once __DIR__ . '/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')
 {
