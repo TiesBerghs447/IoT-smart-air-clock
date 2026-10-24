@@ -3,6 +3,8 @@
 
 struct Alarm
 {
+    int id;
+
     bool used;
     bool enabled;
 
@@ -94,5 +96,14 @@ void saveAlarms();
 void loadAlarms();
 
 void clearAlarms();
+
+void setAlarmId(
+    int index,
+    int id
+);
+
+int getAlarmId(
+    int index
+);
 
 #endif

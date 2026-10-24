@@ -69,20 +69,22 @@ try
     $connection = database_connection();
     $statement = $connection->query(
         'SELECT
+            id,
             hour,
             minute,
             CASE WHEN enabled THEN 1 ELSE 0 END AS enabled
-         FROM alarms
-         ORDER BY hour, minute'
+        FROM alarms
+        ORDER BY hour, minute'
     );
 
     $alarms = [];
     foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $row)
     {
         $alarms[] = [
-            'hour' => (int) $row['hour'],
-            'minute' => (int) $row['minute'],
-            'enabled' => (bool) $row['enabled']
+            'id' => (int)$row['id'],
+            'hour' => (int)$row['hour'],
+            'minute' => (int)$row['minute'],
+            'enabled' => (bool)$row['enabled']
         ];
     }
 

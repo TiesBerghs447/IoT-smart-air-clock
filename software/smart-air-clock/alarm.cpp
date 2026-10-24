@@ -28,6 +28,8 @@ static bool editEnabled = true;
 
 static int lastTriggeredMinute = -1;
 
+extern bool deleteAlarmServer(int id);
+
 void initAlarm()
 {
      loadAlarms();
@@ -60,6 +62,8 @@ bool addAlarm(
 
     alarms[alarmCount].minute = minute;
 
+    alarms[alarmCount].id = -1;
+
     alarmCount++;
 
     saveAlarms();
@@ -67,9 +71,7 @@ bool addAlarm(
     return true;
 }
 
-void removeAlarm(
-    int index
-)
+void removeAlarm(int index)
 {
     if(
         index < 0 ||
@@ -79,14 +81,23 @@ void removeAlarm(
         return;
     }
 
+    int alarmId =
+        getAlarmId(index);
+
+    if(alarmId > 0)
+    {
+        deleteAlarmServer(
+            alarmId
+        );
+    }
+
     for(
         int i = index;
         i < alarmCount - 1;
         i++
     )
     {
-        alarms[i] =
-            alarms[i + 1];
+        alarms[i] = alarms[i + 1];
     }
 
     alarmCount--;
@@ -95,13 +106,16 @@ void removeAlarm(
 
     saveAlarms();
 
-    if(
-        selectedAlarm >
-        alarmCount
-    )
+    if(selectedAlarm >= alarmCount)
     {
-        selectedAlarm =
-            alarmCount;
+        if(alarmCount > 0)
+        {
+            selectedAlarm = alarmCount - 1;
+        }
+        else
+        {
+            selectedAlarm = 0;
+        }
     }
 }
 
@@ -297,12 +311,19 @@ void nextAlarm()
 {
     selectedAlarm++;
 
-    if(
-        selectedAlarm >
-        alarmCount
-    )
+    if(alarmCount >= 5)
     {
-        selectedAlarm = 0;
+        if(selectedAlarm >= alarmCount)
+        {
+            selectedAlarm = 0;
+        }
+    }
+    else
+    {
+        if(selectedAlarm > alarmCount)
+        {
+            selectedAlarm = 0;
+        }
     }
 }
 
@@ -310,20 +331,30 @@ void previousAlarm()
 {
     selectedAlarm--;
 
-    if(
-        selectedAlarm < 0
-    )
+    if(alarmCount >= 5)
     {
-        selectedAlarm =
-            alarmCount;
+        if(selectedAlarm < 0)
+        {
+            selectedAlarm = alarmCount - 1;
+        }
+    }
+    else
+    {
+        if(selectedAlarm < 0)
+        {
+            selectedAlarm = alarmCount;
+        }
     }
 }
 
 bool isNewAlarmSelected()
 {
-    return
-        selectedAlarm ==
-        alarmCount;
+    if(alarmCount >= 5)
+    {
+        return false;
+    }
+
+    return selectedAlarm == alarmCount;
 }
 
 int getEditHour()
@@ -358,6 +389,10 @@ void startEditAlarm()
     }
     else
     {
+        if(alarmCount >= 5)
+        {
+            return;
+        }
         editHour = 7;
         editMinute = 0;
         editEnabled = true;
@@ -495,6 +530,7 @@ void loadAlarms()
             );
 
         alarms[i].used = true;
+        alarms[i].id = -1;
 
         alarms[i].hour =
             (packed >> 16) & 0xFF;
@@ -526,4 +562,35 @@ void clearAlarms()
 {
     alarmCount = 0;
     saveAlarms();
+}
+
+void setAlarmId(
+    int index,
+    int id
+)
+{
+    if(
+        index < 0 ||
+        index >= alarmCount
+    )
+    {
+        return;
+    }
+
+    alarms[index].id = id;
+}
+
+int getAlarmId(
+    int index
+)
+{
+    if(
+        index < 0 ||
+        index >= alarmCount
+    )
+    {
+        return -1;
+    }
+
+    return alarms[index].id;
 }

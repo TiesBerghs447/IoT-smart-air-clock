@@ -165,6 +165,9 @@ bool downloadConfig()
             alarms
         )
         {
+            int id =
+                alarm["id"];
+
             int hour =
                 alarm["hour"];
 
@@ -174,13 +177,15 @@ bool downloadConfig()
             bool enabled =
                 alarm["enabled"];
 
-            addAlarm(
-                hour,
-                minute
-            );
+            addAlarm(hour, minute);
+
+            int index =
+                getAlarmCount() - 1;
+
+            setAlarmId(index, id);
 
             enableAlarm(
-                getAlarmCount() - 1,
+                index,
                 enabled
             );
         }
@@ -302,4 +307,33 @@ bool uploadMeasurement(
 
     return
         responseCode == 200;
+}
+
+bool deleteAlarmServer(int id)
+{
+    HTTPClient http;
+
+    http.begin(
+        "https://iot-smart-air-clock-1.onrender.com/delete_alarm.php"
+    );
+
+    http.addHeader(
+        "Content-Type",
+        "application/x-www-form-urlencoded"
+    );
+
+    http.addHeader(
+        "X-API-KEY",
+        API_KEY
+    );
+
+    String data =
+        "id=" + String(id);
+
+    int code =
+        http.POST(data);
+
+    http.end();
+
+    return code == 200;
 }

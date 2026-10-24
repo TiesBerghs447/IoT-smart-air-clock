@@ -20,5 +20,7 @@ bool downloadLedState(
     int& blue
 );
 
+bool deleteAlarmServer(int id);
+
 
 #endif
