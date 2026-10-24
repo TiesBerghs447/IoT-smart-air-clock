@@ -73,6 +73,16 @@ bool addAlarm(
 
 void removeAlarm(int index)
 {
+    Serial.println("REMOVE ALARM CALLED");
+
+    if(
+        index < 0 ||
+        index >= alarmCount
+    )
+    {
+        return;
+    }
+
     if(
         index < 0 ||
         index >= alarmCount
@@ -84,11 +94,16 @@ void removeAlarm(int index)
     int alarmId =
         getAlarmId(index);
 
+    Serial.print("ALARM ID = ");
+    Serial.println(alarmId);
+
     if(alarmId > 0)
     {
-        deleteAlarmServer(
-            alarmId
-        );
+        bool success =
+            deleteAlarmServer(alarmId);
+
+        Serial.print("Delete result: ");
+        Serial.println(success);
     }
 
     for(
@@ -470,10 +485,17 @@ void saveAlarms()
     )
     {
         char key[16];
+        char idKey[16];
 
         sprintf(
             key,
             "alarm%d",
+            i
+        );
+
+        sprintf(
+            idKey,
+            "id%d",
             i
         );
 
@@ -485,6 +507,11 @@ void saveAlarms()
         prefs.putUInt(
             key,
             packed
+        );
+
+        prefs.putInt(
+            idKey,
+            alarms[i].id
         );
     }
 
@@ -516,10 +543,17 @@ void loadAlarms()
     )
     {
         char key[16];
+        char idKey[16];
 
         sprintf(
             key,
             "alarm%d",
+            i
+        );
+
+        sprintf(
+            idKey,
+            "id%d",
             i
         );
 
@@ -530,7 +564,12 @@ void loadAlarms()
             );
 
         alarms[i].used = true;
-        alarms[i].id = -1;
+
+        alarms[i].id =
+            prefs.getInt(
+                idKey,
+                -1
+            );
 
         alarms[i].hour =
             (packed >> 16) & 0xFF;
@@ -546,11 +585,16 @@ void loadAlarms()
 
     Serial.println("Alarmen geladen:");
 
-    for(int i = 0; i < alarmCount; i++)
+    for(
+        int i = 0;
+        i < alarmCount;
+        i++
+    )
     {
         Serial.printf(
-            "A%d %02d:%02d %s\n",
+            "A%d ID=%d %02d:%02d %s\n",
             i + 1,
+            alarms[i].id,
             alarms[i].hour,
             alarms[i].minute,
             alarms[i].enabled ? "ON" : "OFF"

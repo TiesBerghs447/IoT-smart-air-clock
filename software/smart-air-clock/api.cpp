@@ -157,13 +157,15 @@ bool downloadConfig()
         clearAlarms();
 
         JsonArray alarms =
-            doc["alarms"]
-            .as<JsonArray>();
+            doc["alarms"].as<JsonArray>();
 
-        for(
-            JsonObject alarm :
-            alarms
-        )
+        for(JsonObject alarm : alarms)
+        {
+            Serial.print("SERVER ALARM ID: ");
+            Serial.println(alarm["id"].as<int>());
+        }
+
+        for(JsonObject alarm : alarms)
         {
             int id =
                 alarm["id"];
@@ -184,11 +186,16 @@ bool downloadConfig()
 
             setAlarmId(index, id);
 
+            setAlarmId(index, id);
+
+            saveAlarms();
+
             enableAlarm(
                 index,
                 enabled
             );
         }
+    }
 
         Serial.print(
             "Alarmen geladen: "
@@ -211,7 +218,7 @@ bool downloadConfig()
                 alarm.enabled ? "ON" : "OFF"
             );
         }
-    }
+    
 
     http.end();
 
@@ -314,7 +321,7 @@ bool deleteAlarmServer(int id)
     HTTPClient http;
 
     http.begin(
-        "https://iot-smart-air-clock-1.onrender.com/delete_alarm.php"
+        "https://iot-smart-air-clock-1.onrender.com/settings/delete_alarm.php"
     );
 
     http.addHeader(
@@ -330,8 +337,20 @@ bool deleteAlarmServer(int id)
     String data =
         "id=" + String(id);
 
+    Serial.print("DELETE ID: ");
+    Serial.println(id);
+
     int code =
         http.POST(data);
+
+    Serial.print("DELETE CODE: ");
+    Serial.println(code);
+
+    String response =
+        http.getString();
+
+    Serial.print("DELETE RESPONSE: ");
+    Serial.println(response);
 
     http.end();
 

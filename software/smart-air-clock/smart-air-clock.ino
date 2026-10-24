@@ -237,8 +237,10 @@ void loop()
         ALARM_DELETE
     )
     {
-        if(setPressed())
+        if(upPressed())
         {
+            Serial.println("DELETE CONFIRMED");
+
             removeAlarm(
                 getSelectedAlarm()
             );
@@ -250,6 +252,8 @@ void loop()
 
         if(powerPressed())
         {
+            Serial.println("DELETE CANCELLED");
+
             setAlarmMenuState(
                 ALARM_LIST
             );
