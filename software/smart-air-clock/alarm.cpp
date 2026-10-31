@@ -1,4 +1,5 @@
 #include "alarm.h"
+#include "audio.h"
 
 #include <Arduino.h>
 #include <time.h>
@@ -28,6 +29,8 @@ static bool editEnabled = true;
 
 static int lastTriggeredMinute = -1;
 
+static bool alarmAudioPlaying = false;
+
 extern bool deleteAlarmServer(int id);
 
 void initAlarm()
@@ -37,6 +40,8 @@ void initAlarm()
     alarmRinging = false;
 
     alarmSnoozed = false;
+
+    alarmAudioPlaying = false;
 
     menuState =
         ALARM_NORMAL;
@@ -193,12 +198,19 @@ bool isAlarmSnoozed()
 void stopAlarm()
 {
     alarmRinging = false;
-
     alarmSnoozed = false;
+
+    alarmAudioPlaying = false;
+
+    audioStop();
 }
 
 void startSnooze()
 {
+    audioStop();
+
+    alarmAudioPlaying = false;
+
     struct tm timeinfo;
 
     if(
@@ -263,6 +275,10 @@ void updateAlarm()
             alarmSnoozed = false;
 
             alarmRinging = true;
+
+            audioPlay(1);
+
+            alarmAudioPlaying = true;
         }
     }
 
@@ -297,6 +313,12 @@ void updateAlarm()
             )
             {
                 alarmRinging = true;
+
+                if(!alarmAudioPlaying)
+                {
+                    audioPlay(1);
+                    alarmAudioPlaying = true;
+                }
 
                 lastTriggeredMinute =
                     currentMinute;

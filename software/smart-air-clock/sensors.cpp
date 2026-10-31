@@ -12,7 +12,7 @@
 #define SCL_PIN 9
 
 #define MHZ19_UART_RX 16
-#define MHZ19_UART_TX 17
+#define MHZ19_UART_TX 15
 
 Adafruit_AHTX0 aht;
 Adafruit_BMP280 bmp;

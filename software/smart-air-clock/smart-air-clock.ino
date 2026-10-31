@@ -7,6 +7,7 @@
 #include "display.h"
 #include "buttons.h"
 #include "alarm.h"
+#include "audio.h"
 
 #include <time.h>
 
@@ -71,6 +72,7 @@ void setup()
     Serial.println("Tijd ontvangen");
     initDisplay();
     initButtons();
+    audioInit();
     initAlarm();
 }
 
@@ -259,6 +261,12 @@ void loop()
             );
         }
     }
+
+    // ==================================================
+    // ALARM ENGINE
+    // ==================================================
+
+    updateAlarm();
 
     // ==================================================
     // ALARM ENGINE
