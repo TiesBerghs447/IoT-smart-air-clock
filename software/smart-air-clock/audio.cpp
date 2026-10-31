@@ -15,7 +15,7 @@ void audioInit()
 
     mp3Serial.begin(9600, SERIAL_8N1, 18, 17);
 
-    delay(3000);
+    delay(3000); 
 
     bool ok = dfPlayer.begin(mp3Serial);
 

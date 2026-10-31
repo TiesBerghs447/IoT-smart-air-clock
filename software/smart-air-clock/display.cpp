@@ -306,6 +306,29 @@ void updateAlarmDisplay()
 
             break;
         }
+        case ALARM_SET_SOUND:
+        {
+            display.setTextSize(1);
+
+            display.setCursor(0, 0);
+            display.println("GELUID");
+
+            display.setTextSize(3);
+
+            display.setCursor(15, 20);
+
+            char sound[3];
+
+            sprintf(
+                sound,
+                "%02d",
+                getEditSoundId()
+            );
+
+            display.println(sound);
+
+            break;
+        }
         case ALARM_DELETE:
         {
             display.setTextSize(1);

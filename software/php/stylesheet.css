@@ -721,6 +721,13 @@ h2 {
     font-variant-numeric: tabular-nums;
 }
 
+.alarm-display span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .alarm-item .alarm-form {
     flex: 1;
 }

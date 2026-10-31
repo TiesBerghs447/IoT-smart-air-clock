@@ -5,6 +5,8 @@
 #include <time.h>
 #include <Preferences.h>
 
+#define MAX_ALARM_SOUND 5
+
 static Preferences prefs;
 
 static Alarm alarms[5];
@@ -30,6 +32,19 @@ static bool editEnabled = true;
 static int lastTriggeredMinute = -1;
 
 static bool alarmAudioPlaying = false;
+
+static int activeSoundId = 1;
+static int editSoundId = 1;
+
+const int soundTrackMap[] =
+{
+    0,
+    1, // WakeUp
+    3, // RickAstly
+    4, // Bird
+    5, // StarDestroyer
+    6  // Piano
+};
 
 extern bool deleteAlarmServer(int id);
 
@@ -68,6 +83,8 @@ bool addAlarm(
     alarms[alarmCount].minute = minute;
 
     alarms[alarmCount].id = -1;
+
+    alarms[alarmCount].soundID = 1;
 
     alarmCount++;
 
@@ -276,7 +293,9 @@ void updateAlarm()
 
             alarmRinging = true;
 
-            audioPlay(1);
+            audioPlay(
+                soundTrackMap[activeSoundId]
+            );
 
             alarmAudioPlaying = true;
         }
@@ -316,7 +335,13 @@ void updateAlarm()
 
                 if(!alarmAudioPlaying)
                 {
-                    audioPlay(1);
+                    activeSoundId =
+                        alarms[i].soundID;
+
+                    audioPlay(
+                        soundTrackMap[activeSoundId]
+                    );
+
                     alarmAudioPlaying = true;
                 }
 
@@ -423,6 +448,9 @@ void startEditAlarm()
 
         editEnabled =
             alarms[selectedAlarm].enabled;
+
+        editSoundId =
+            alarms[selectedAlarm].soundID;
     }
     else
     {
@@ -430,9 +458,11 @@ void startEditAlarm()
         {
             return;
         }
+
         editHour = 7;
         editMinute = 0;
         editEnabled = true;
+        editSoundId = 1;
     }
 }
 
@@ -456,6 +486,17 @@ void increaseEditMinute()
     }
 }
 
+void increaseEditSoundId()
+{
+    editSoundId++;
+
+    if(editSoundId > MAX_ALARM_SOUND)
+    {
+        editSoundId = 1;
+    }
+}
+
+
 void toggleEditEnabled()
 {
     editEnabled =
@@ -473,6 +514,9 @@ void saveEditedAlarm()
 
         alarms[selectedAlarm].enabled =
             editEnabled;
+            
+        alarms[selectedAlarm].soundID =
+            editSoundId;
     }
     else
     {
@@ -483,6 +527,9 @@ void saveEditedAlarm()
 
         alarms[alarmCount - 1].enabled =
             editEnabled;
+
+        alarms[alarmCount - 1].soundID =
+            editSoundId;
     }
 
     saveAlarms();
@@ -490,51 +537,28 @@ void saveEditedAlarm()
 
 void saveAlarms()
 {
-    prefs.begin(
-        "alarms",
-        false
-    );
+    prefs.begin("alarms", false);
 
-    prefs.putInt(
-        "count",
-        alarmCount
-    );
+    prefs.putInt("count", alarmCount);
 
-    for(
-        int i = 0;
-        i < alarmCount;
-        i++
-    )
+    for(int i = 0; i < alarmCount; i++)
     {
         char key[16];
         char idKey[16];
+        char soundKey[16];
 
-        sprintf(
-            key,
-            "alarm%d",
-            i
-        );
-
-        sprintf(
-            idKey,
-            "id%d",
-            i
-        );
+        sprintf(key, "alarm%d", i);
+        sprintf(idKey, "id%d", i);
+        sprintf(soundKey, "sound%d", i);
 
         uint32_t packed =
             (alarms[i].hour << 16) |
             (alarms[i].minute << 8) |
             alarms[i].enabled;
 
-        prefs.putUInt(
-            key,
-            packed
-        );
-
-        prefs.putInt(
-            idKey,
-            alarms[i].id
-        );
+        prefs.putUInt(key, packed);
+        prefs.putInt(idKey, alarms[i].id);
+        prefs.putInt(soundKey, alarms[i].soundID);
     }
 
     prefs.end();
@@ -542,56 +566,34 @@ void saveAlarms()
 
 void loadAlarms()
 {
-    prefs.begin(
-        "alarms",
-        true
-    );
+    prefs.begin("alarms", true);
 
-    alarmCount =
-        prefs.getInt(
-            "count",
-            0
-        );
+    alarmCount = prefs.getInt("count", 0);
 
-    if(alarmCount > 5)
+    if (alarmCount > 5)
     {
         alarmCount = 5;
     }
 
-    for(
-        int i = 0;
-        i < alarmCount;
-        i++
-    )
+    for (int i = 0; i < alarmCount; i++)
     {
         char key[16];
         char idKey[16];
+        char soundKey[16];
 
-        sprintf(
-            key,
-            "alarm%d",
-            i
-        );
+        sprintf(key, "alarm%d", i);
+        sprintf(idKey, "id%d", i);
+        sprintf(soundKey, "sound%d", i);
 
-        sprintf(
-            idKey,
-            "id%d",
-            i
-        );
-
-        uint32_t packed =
-            prefs.getUInt(
-                key,
-                0
-            );
+        uint32_t packed = prefs.getUInt(key, 0);
 
         alarms[i].used = true;
 
         alarms[i].id =
-            prefs.getInt(
-                idKey,
-                -1
-            );
+            prefs.getInt(idKey, -1);
+
+        alarms[i].soundID =
+            prefs.getInt(soundKey, 1);
 
         alarms[i].hour =
             (packed >> 16) & 0xFF;
@@ -607,19 +609,16 @@ void loadAlarms()
 
     Serial.println("Alarmen geladen:");
 
-    for(
-        int i = 0;
-        i < alarmCount;
-        i++
-    )
+    for (int i = 0; i < alarmCount; i++)
     {
         Serial.printf(
-            "A%d ID=%d %02d:%02d %s\n",
+            "A%d ID=%d %02d:%02d %s SOUND=%d\n",
             i + 1,
             alarms[i].id,
             alarms[i].hour,
             alarms[i].minute,
-            alarms[i].enabled ? "ON" : "OFF"
+            alarms[i].enabled ? "ON" : "OFF",
+            alarms[i].soundID
         );
     }
 }
@@ -659,4 +658,26 @@ int getAlarmId(
     }
 
     return alarms[index].id;
+}
+
+int getEditSoundId()
+{
+    return editSoundId;
+}
+
+void setAlarmSoundId(
+    int index,
+    int soundId
+)
+{
+    if(
+        index < 0 ||
+        index >= alarmCount
+    )
+    {
+        return;
+    }
+
+    alarms[index].soundID =
+        soundId;
 }

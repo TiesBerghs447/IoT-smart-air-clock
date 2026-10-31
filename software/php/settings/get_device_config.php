@@ -72,6 +72,7 @@ try
             id,
             hour,
             minute,
+            "soundID" AS "soundID",
             CASE WHEN enabled THEN 1 ELSE 0 END AS enabled
         FROM alarms
         ORDER BY hour, minute'
@@ -84,6 +85,11 @@ try
             'id' => (int)$row['id'],
             'hour' => (int)$row['hour'],
             'minute' => (int)$row['minute'],
+            'soundID' => in_array(
+                (int)($row['soundID'] ?? 1),
+                [1, 2, 4, 5, 7],
+                true
+            ) ? (int)$row['soundID'] : 1,
             'enabled' => (bool)$row['enabled']
         ];
     }

@@ -220,6 +220,36 @@ void loop()
 
         if(setPressed())
         {
+            setAlarmMenuState(
+                ALARM_SET_SOUND
+            );
+        }
+        
+        if(powerPressed())
+        {
+            setAlarmMenuState(
+                ALARM_LIST
+            );
+        }
+    }
+    
+    // Sound kiezen
+
+    if(
+        getAlarmMenuState() ==
+        ALARM_SET_SOUND
+    )
+    {
+        if(
+            upPressed() ||
+            upHeld()
+        )
+        {
+            increaseEditSoundId();
+        }
+
+        if(setPressed())
+        {
             saveEditedAlarm();
 
             setAlarmMenuState(
@@ -230,10 +260,11 @@ void loop()
         if(powerPressed())
         {
             setAlarmMenuState(
-                ALARM_LIST
+                ALARM_SET_ENABLED
             );
         }
     }
+
     if(
         getAlarmMenuState() ==
         ALARM_DELETE

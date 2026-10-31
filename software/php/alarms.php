@@ -79,6 +79,36 @@ function alarm_posted_enabled(): bool
     return $value === '1';
 }
 
+function alarm_sound_options(): array
+{
+    return [
+        1 => 'Wake-up geluid',
+        2 => 'Rickroll',
+        4 => 'Star Destroyer',
+        5 => 'Vogels',
+        7 => 'Piano'
+    ];
+}
+
+function alarm_posted_sound_id(): int
+{
+    $value = $_POST['soundID'] ?? null;
+    $options = alarm_sound_options();
+
+    if (
+        !is_string($value)
+        || !ctype_digit($value)
+        || !array_key_exists((int)$value, $options)
+    )
+    {
+        throw new InvalidArgumentException(
+            'Kies een geldig alarmgeluid.'
+        );
+    }
+
+    return (int)$value;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST')
 {
     try
@@ -122,6 +152,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             $enabled =
                 alarm_posted_enabled();
 
+            $soundId =
+                alarm_posted_sound_id();
+
             $count =
                 (int)$connection
                     ->query(
@@ -160,15 +193,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             $insert =
                 $connection->prepare(
                     'INSERT INTO alarms
-                     (hour, minute, enabled)
+                     (hour, minute, enabled, "soundID")
                      VALUES
-                     (:hour, :minute, :enabled)'
+                     (:hour, :minute, :enabled, :soundID)'
                 );
 
             $insert->execute([
                 ':hour' => $hour,
                 ':minute' => $minute,
-                ':enabled' => $enabled ? 'true' : 'false'
+                ':enabled' => $enabled ? 'true' : 'false',
+                ':soundID' => $soundId
             ]);
 
             header(
@@ -202,6 +236,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     59
                 );
 
+            $soundId =
+                alarm_posted_sound_id();
+
             $duplicate =
                 $connection->prepare(
                     'SELECT COUNT(*)
@@ -231,13 +268,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                     'UPDATE alarms
                      SET
                         hour = :hour,
-                        minute = :minute
+                        minute = :minute,
+                        "soundID" = :soundID
                      WHERE id = :id'
                 );
 
             $update->execute([
                 ':hour' => $hour,
                 ':minute' => $minute,
+                ':soundID' => $soundId,
                 ':id' => $id
             ]);
 
@@ -361,6 +400,7 @@ try
                 id,
                 hour,
                 minute,
+                "soundID" AS "soundID",
                 CASE WHEN enabled THEN 1 ELSE 0 END AS enabled
             FROM alarms
             ORDER BY hour, minute
@@ -432,6 +472,13 @@ catch (Throwable $error)
                         <label>Minuut
                             <input type="number" name="minute" min="0" max="59" required>
                         </label>
+                        <label>Geluid
+                            <select name="soundID" required>
+                                <?php foreach (alarm_sound_options() as $soundId => $soundName): ?>
+                                    <option value="<?= $soundId; ?>" <?= $soundId === 1 ? 'selected' : ''; ?>><?= htmlspecialchars($soundName, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
                     </div>
                     <label class="alarm-toggle-label">
                         <input type="hidden" name="enabled" value="0">
@@ -456,10 +503,16 @@ catch (Throwable $error)
                         $hour = (int) $alarm['hour'];
                         $minute = (int) $alarm['minute'];
                         $enabled = (bool) $alarm['enabled'];
+                        $soundOptions = alarm_sound_options();
+                        $soundId = (int) ($alarm['soundID'] ?? 1);
+                        if (!array_key_exists($soundId, $soundOptions)) {
+                            $soundId = 1;
+                        }
                         ?>
                         <div class="alarm-item">
                             <div class="alarm-display">
                                 <strong><?= sprintf('%02d:%02d', $hour, $minute); ?></strong>
+                                <span><?= htmlspecialchars($soundOptions[$soundId], ENT_QUOTES, 'UTF-8'); ?></span>
                             </div>
                             <form method="post" class="alarm-form">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
@@ -471,6 +524,13 @@ catch (Throwable $error)
                                     </label>
                                     <label>Minuut
                                         <input type="number" name="minute" min="0" max="59" value="<?= $minute; ?>" required>
+                                    </label>
+                                    <label>Geluid
+                                        <select name="soundID" required>
+                                            <?php foreach ($soundOptions as $optionId => $optionName): ?>
+                                                <option value="<?= $optionId; ?>" <?= $soundId === $optionId ? 'selected' : ''; ?>><?= htmlspecialchars($optionName, ENT_QUOTES, 'UTF-8'); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </label>
                                 </div>
                                 <button class="save-btn" type="submit">Wijzigen</button>

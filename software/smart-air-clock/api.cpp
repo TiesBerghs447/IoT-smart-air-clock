@@ -178,6 +178,9 @@ bool downloadConfig()
 
             bool enabled =
                 alarm["enabled"];
+            
+            int soundID =
+                alarm["soundID"] | 1;
 
             addAlarm(hour, minute);
 
@@ -186,14 +189,17 @@ bool downloadConfig()
 
             setAlarmId(index, id);
 
-            setAlarmId(index, id);
-
-            saveAlarms();
+            setAlarmSoundId(
+                index,
+                soundID
+            );
 
             enableAlarm(
                 index,
                 enabled
             );
+
+            saveAlarms();
         }
     }
 

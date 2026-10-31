@@ -10,6 +10,8 @@ struct Alarm
 
     int hour;
     int minute;
+
+    int soundID;
 };
 
 enum AlarmMenuState
@@ -23,6 +25,8 @@ enum AlarmMenuState
     ALARM_SET_MINUTE,
 
     ALARM_SET_ENABLED,
+    
+    ALARM_SET_SOUND,
 
     ALARM_DELETE
 };
@@ -104,6 +108,15 @@ void setAlarmId(
 
 int getAlarmId(
     int index
+);
+
+int getEditSoundId();
+void increaseEditSoundId();
+int getEditSoundId();
+
+void setAlarmSoundId(
+    int index,
+    int soundId
 );
 
 #endif
