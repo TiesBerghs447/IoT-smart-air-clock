@@ -535,29 +535,31 @@ catch (Throwable $error)
                                 </div>
                                 <button class="save-btn" type="submit">Wijzigen</button>
                             </form>
-                            <form method="post" class="alarm-toggle-form">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                                <input type="hidden" name="action" value="toggle">
-                                <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
-                                <label class="alarm-toggle-label">
-                                    <input
-                                        type="checkbox"
-                                        name="enabled"
-                                        value="1"
-                                        <?= $enabled ? 'checked' : ''; ?>
-                                        onchange="this.form.submit()">
-                                    Alarm staat <?= $enabled ? 'aan' : 'uit'; ?>
-                                </label>
-                                <noscript>
-                                    <button class="save-btn" type="submit">Status opslaan</button>
-                                </noscript>
-                            </form>
-                            <form method="post" class="alarm-delete-form" onsubmit="return confirm('Dit alarm verwijderen?');">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
-                                <button class="reset-btn" type="submit">Verwijderen</button>
-                            </form>
+                            <div class="alarm-actions">
+                                <form method="post" class="alarm-toggle-form">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <input type="hidden" name="action" value="toggle">
+                                    <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
+                                    <label class="alarm-toggle-label">
+                                        <input
+                                            type="checkbox"
+                                            name="enabled"
+                                            value="1"
+                                            <?= $enabled ? 'checked' : ''; ?>
+                                            onchange="this.form.submit()">
+                                        Alarm staat <?= $enabled ? 'aan' : 'uit'; ?>
+                                    </label>
+                                    <noscript>
+                                        <button class="save-btn" type="submit">Status opslaan</button>
+                                    </noscript>
+                                </form>
+                                <form method="post" class="alarm-delete-form" onsubmit="return confirm('Dit alarm verwijderen?');">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= (int) $alarm['id']; ?>">
+                                    <button class="reset-btn" type="submit">Verwijderen</button>
+                                </form>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
