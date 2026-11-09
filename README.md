@@ -173,7 +173,7 @@ tussen de toegewezen GPIO en GND aan; een ingedrukte knop wordt als LOW gelezen.
 | Rood | GPIO 40 | Via serieweerstand naar het rode kanaal |
 | Groen | GPIO 41 | Via serieweerstand naar het groene kanaal |
 | Blauw | GPIO 42 | Via serieweerstand naar het blauwe kanaal |
-| Gemeenschappelijke pin | — | Aansluiten volgens het type RGB-led (common anode of common cathode) |
+| Gemeenschappelijke pin | GND |  |
 
 # RGB Statusindicatie
 
