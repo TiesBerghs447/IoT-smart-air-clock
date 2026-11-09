@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#define POWER_PIN 4
+#define POWER_PIN 4   
 #define SET_PIN   5
 #define UP_PIN    6
 

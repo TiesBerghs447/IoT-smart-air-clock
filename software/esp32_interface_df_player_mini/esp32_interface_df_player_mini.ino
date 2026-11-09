@@ -23,7 +23,7 @@ void setup()
 
   Serial.println("PLAYING");
 
-  dfPlayer.play(4);
+  dfPlayer.play(1);
 
   delay(2000);
 

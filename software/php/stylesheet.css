@@ -642,12 +642,103 @@ h2 {
     padding: 22px;
 }
 
+.chart-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
 .chart-container h2,
 .settings-card h2 {
     margin: 0 0 16px;
     color: var(--ink);
     font-size: 1.05rem;
     font-weight: 700;
+}
+
+.chart-container h2 {
+    margin-bottom: 12px;
+}
+
+.history-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.history-range,
+.history-custom-range input,
+.history-apply {
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.history-range,
+.history-custom-range input {
+    padding: 7px 10px;
+}
+
+.history-range {
+    max-width: 100%;
+}
+
+.history-custom-range {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.history-custom-range[hidden] {
+    display: none;
+}
+
+.history-custom-range label {
+    display: grid;
+    gap: 3px;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.history-custom-range input {
+    min-width: 145px;
+}
+
+.history-apply {
+    padding: 7px 14px;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.history-apply:hover,
+.history-apply:focus-visible {
+    background: var(--green-dark);
+}
+
+.chart-status {
+    min-height: 1.4em;
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .chart-container canvas {
@@ -897,6 +988,29 @@ h2 {
 }
 
 @media (max-width: 620px) {
+    .chart-heading {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .history-controls,
+    .history-custom-range {
+        width: 100%;
+    }
+
+    .history-custom-range label {
+        flex: 1 1 130px;
+    }
+
+    .history-custom-range input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .history-apply {
+        align-self: flex-end;
+    }
+
     .navbar {
         align-items: flex-start;
         flex-direction: column;

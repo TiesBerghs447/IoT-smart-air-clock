@@ -77,10 +77,10 @@ De ESP32-S3 verzamelt sensorgegevens, verwerkt deze lokaal en verstuurt de gegev
 
 ## Backend
 
-De backend draait op InfinityFree en bestaat uit:
+De backend draait op Render en bestaat uit:
 
 - PHP
-- MySQL
+- PostgreSQL
 - HTTP API
 
 De backend ontvangt meetgegevens, slaat deze op en maakt ze beschikbaar voor het dashboard.
@@ -105,7 +105,7 @@ ESP32-S3
     ↓ HTTP
 save_data.php
     ↓
-MySQL Database
+PostgreSQL Database
     ↓
 latest.php / history.php
     ↓
@@ -114,35 +114,85 @@ HTML Dashboard
 
 # Aansluitschema
 
-## OLED + AHT20 + BMP280
-GPIO20 -> SDA
-GPIO21 -> SCL
+De onderstaande GPIO-nummers zijn overgenomen uit de firmware in
+`software/smart-air-clock/`. Bij de ESP32-S3 zijn de GPIO-pinnen 3,3V-signalen;
+sluit geen 5V-signaal rechtstreeks op een GPIO aan.
 
-## MH-Z19B
-TX -> GPIO16
-RX -> GPIO17
+## I²C-bus: OLED, AHT20 en BMP280
 
-## DFPlayer Mini
-RX -> GPIO18
-TX -> GPIO19
+De drie modules delen dezelfde I²C-bus. Verbind SDA met SDA en SCL met SCL op
+elke module.
 
-## RGB LED
-R -> GPIO25
-G -> GPIO26
-B -> GPIO27
+| ESP32-S3 | OLED SSD1306 | AHT20 | BMP280 | Functie / firmware-instelling |
+|----------|--------------|-------|--------|-------------------------------|
+| GPIO 8   | SDA          | SDA   | SDA    | I²C-data |
+| GPIO 9   | SCL          | SCL   | SCL    | I²C-klok |
+| GND      | GND          | GND   | GND    | Gemeenschappelijke massa |
+| Voeding volgens module | VCC | VCC | VCC | 3.3V |
+
+| Module | I²C-adres in firmware |
+|--------|-----------------------|
+| OLED SSD1306 | `0x3C` |
+| BMP280 | `0x77` |
+| AHT20 | Adres wordt door de AHT20-bibliotheek afgehandeld |
+
+## Seriële verbindingen (UART)
+
+De RX- en TX-signalen worden gekruist aangesloten: TX van een module gaat naar
+RX van de ESP32-S3, en RX van de module naar TX van de ESP32-S3.
+
+| Module | Modulepin | ESP32-S3-pin | Instelling in firmware |
+|--------|-----------|--------------|-------------------------|
+| MH-Z19B | TX | GPIO 16 (RX) | UART2, 9600 baud |
+| MH-Z19B | RX | GPIO 15 (TX) | UART2, 9600 baud |
+| DFPlayer Mini | TX | GPIO 18 (RX) | UART1, 9600 baud |
+| DFPlayer Mini | RX | GPIO 17 (TX) | UART1, 9600 baud |
+| Beide modules | GND | GND | Gemeenschappelijke massa |
+| MH-Z19B | Voeding | 5V |
+| DFPlayer Mini | VCC | 5V |
+| Luidspreker (2 W, 8 Ω) | Aansluitingen | DFPlayer Mini `SPK1` en `SPK2` | Gebruik de luidsprekeruitgang van de DFPlayer, niet een ESP32-GPIO |
+
+Controleer vóór aansluiting of de UART-signaalniveaus compatibel zijn met de
+3,3V-GPIO's van de ESP32-S3. Gebruik zo nodig een geschikte level shifter.
+
+## Drukknoppen
+
+De firmware configureert de knoppen als `INPUT_PULLUP`. Sluit daarom elke knop
+tussen de toegewezen GPIO en GND aan; een ingedrukte knop wordt als LOW gelezen.
+
+| Knop | ESP32-S3-pin | Andere aansluiting | Functie |
+|------|--------------|--------------------|---------|
+| POWER | GPIO 4 | GND | Aan/uit- en menuactie |
+| SET | GPIO 5 | GND | Instellen en bevestigen |
+| UP | GPIO 6 | GND | Waarde verhogen / navigeren |
+
+## RGB-led
+
+| Ledkanaal | ESP32-S3-pin | Aansluiting |
+|-----------|--------------|-------------|
+| Rood | GPIO 40 | Via serieweerstand naar het rode kanaal |
+| Groen | GPIO 41 | Via serieweerstand naar het groene kanaal |
+| Blauw | GPIO 42 | Via serieweerstand naar het blauwe kanaal |
+| Gemeenschappelijke pin | — | Aansluiten volgens het type RGB-led (common anode of common cathode) |
 
 # RGB Statusindicatie
 
 | Kleur | Betekenis |
 |---------|------------|
 | Groen | Goede luchtkwaliteit |
-| Oranje | Matige luchtkwaliteit |
+| Geel | Matige luchtkwaliteit |
 | Rood | Slechte luchtkwaliteit |
 
-## CO₂-niveaus
-|< 800 ppm       Goede luchtkwaliteit
-|800-1200 ppm    Matige luchtkwaliteit
-|> 1200 ppm      Slechte luchtkwaliteit
+## CO₂-niveaus (standaardwaarden)
+
+| CO₂-concentratie | Kleur | Betekenis |
+|------------------|-------|-----------|
+| Minder dan 800 ppm | Groen | Goede luchtkwaliteit |
+| 800 tot minder dan 1200 ppm | Geel | Matige luchtkwaliteit |
+| 1200 ppm of hoger | Rood | Slechte luchtkwaliteit |
+
+De grenswaarden zijn standaard 800 en 1200 ppm en kunnen via de configuratie
+worden aangepast.
 
 ---
 
@@ -155,9 +205,10 @@ Het dashboard toont:
 - Actuele luchtdruk
 - Actuele CO₂-waarde
 - Luchtkwaliteitsstatus
-- Historische grafieken
+- Historische grafieken van maximaal de laatste 50 metingen
 - Trends over tijd
 - Laatste meetmoment
+- Online/offline-status van de ESP32
 
 ---
 # Auteur
