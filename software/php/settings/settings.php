@@ -42,17 +42,8 @@ elseif ($_SERVER["REQUEST_METHOD"] === "POST")
     $config["audio_track"] =
         ($audioTrack >= 1 && $audioTrack <= 10) ? $audioTrack : 1;
 
-    $config["alarm_hour"] =
-        intval($_POST["alarm_hour"]);
-
-    $config["alarm_minute"] =
-        intval($_POST["alarm_minute"]);
-
     $config["audio_enabled"] =
         isset($_POST["audio_enabled"]);
-
-    $config["alarm_enabled"] =
-        isset($_POST["alarm_enabled"]);
 
     $config["display_enabled"] =
         isset($_POST["display_enabled"]);
@@ -205,38 +196,6 @@ value="<?= $config['audio_volume']; ?>">
     <option value="<?= $track; ?>" <?= (int) ($config['audio_track'] ?? 1) === $track ? 'selected' : ''; ?>>Track <?= $track; ?></option>
 <?php endfor; ?>
 </select>
-
-</div>
-
-<div class="settings-card">
-
-<h2>Alarm</h2>
-
-<label>
-<input
-type="checkbox"
-name="alarm_enabled"
-<?= $config['alarm_enabled'] ? 'checked' : ''; ?>>
- Alarm actief
-</label>
-
-<label>Uur</label>
-
-<input
-type="number"
-min="0"
-max="23"
-name="alarm_hour"
-value="<?= $config['alarm_hour']; ?>">
-
-<label>Minuut</label>
-
-<input
-type="number"
-min="0"
-max="59"
-name="alarm_minute"
-value="<?= $config['alarm_minute']; ?>">
 
 </div>
 
