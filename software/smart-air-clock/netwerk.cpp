@@ -7,6 +7,8 @@
 void connectWiFi()
 {
     WiFiManager wm;
+    wm.setConnectTimeout(20);          // max 20 s proberen met opgeslagen wifi
+    wm.setConfigPortalTimeout(120);    // setup-portaal max 2 min open, daarna lokaal verder
 
     Serial.println(
         "Verbinden met WiFi..."
