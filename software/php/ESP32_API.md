@@ -10,7 +10,15 @@ De website gebruikt de Render-omgevingsvariabelen `user` en `passcode` voor de l
 
 ## Metingen verzenden
 
-`POST /data/save_data.php` verwacht `application/x-www-form-urlencoded` met `temperature`, `humidity`, `pressure` en `co2`. Succes geeft HTTP 200 met `{"status":"ok"}`. Ongeldige waarden geven HTTP 400; een ongeldige sleutel geeft HTTP 401.
+`POST /data/save_data.php` verwacht `application/x-www-form-urlencoded` met `temperature`, `humidity`, `pressure`, `co2`, `light` (geheel getal van 0 t/m 4065) en `presence` (0 of 1). Succes geeft HTTP 200 met `{"status":"ok"}`. Ongeldige waarden geven HTTP 400; een ongeldige sleutel geeft HTTP 401.
+
+De tabel `measurements` moet de kolom `light` bevatten. De bestaande kolom `presence` kan als `integer`/`smallint` blijven staan. Voer eenmalig uit op de PostgreSQL-database als `light` nog ontbreekt:
+
+```sql
+ALTER TABLE measurements ADD COLUMN IF NOT EXISTS light integer;
+```
+
+Oude meetrijen blijven voor `light` leeg (`NULL`); nieuwe uploads bevatten beide waarden. De historiek toont lichtniveau als gemiddelde per tijdvak en aanwezigheid als 0/1 (aanwezig geweest in dat tijdvak).
 
 ## Instellingen ophalen
 

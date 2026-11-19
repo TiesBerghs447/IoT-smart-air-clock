@@ -64,7 +64,8 @@ void initDisplay()
 void updateDisplay(
     float temperature,
     float humidity,
-    int co2
+    int co2,
+    int Light
 )
 {
     struct tm timeinfo;
@@ -148,6 +149,13 @@ void updateDisplay(
     display.print("CO2: ");
     display.print(co2);
     display.print("ppm");
+
+    display.setCursor(70, 54);
+
+        display.print("L:");
+        display.print(
+            Light
+        );
 
     display.display();
 }
@@ -385,4 +393,53 @@ void updateAlarmDisplay()
     }
 
     display.display();
+}
+
+static int bootLine = 0;
+
+void showBootMessage(const String& message)
+{
+    if(bootLine == 0)
+    {
+        display.clearDisplay();
+
+        display.setTextColor(
+            SSD1306_WHITE
+        );
+
+        display.setTextSize(1);
+    }
+
+    display.setCursor(
+        0,
+        bootLine * 10
+    );
+
+    display.println(message);
+
+    display.display();
+
+    bootLine++;
+
+    if(bootLine >= 6)
+    {
+        bootLine = 0;
+    }
+}
+
+void clearDisplay()
+{
+    display.clearDisplay();
+    display.display();
+}
+
+void setDisplayContrast(uint8_t contrast)
+{
+    display.ssd1306_command(
+        SSD1306_SETCONTRAST
+    );
+
+    display.ssd1306_command(
+        contrast
+    );
 }

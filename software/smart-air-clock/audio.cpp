@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "display.h"
 
 #include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
@@ -11,6 +12,7 @@ static uint16_t currentTrack = 1;
 
 void audioInit()
 {
+    showBootMessage("[AUDIO] Init start");
     Serial.println("[AUDIO] Init start");
 
     mp3Serial.begin(9600, SERIAL_8N1, 18, 17);
@@ -19,16 +21,21 @@ void audioInit()
 
     bool ok = dfPlayer.begin(mp3Serial);
 
+
     Serial.print("[AUDIO] begin() = ");
     Serial.println(ok);
 
     if (!ok)
     {
+        showBootMessage("[AUDIO] DFPlayer FAIL");
         Serial.println("[AUDIO] DFPlayer FAIL");
+        delay(500);
         return;
     }
 
+    showBootMessage("[AUDIO] DFPlayer OK");
     Serial.println("[AUDIO] DFPlayer OK");
+    delay(500);
 
     Serial.print("Files=");
     Serial.println(dfPlayer.readFileCounts());

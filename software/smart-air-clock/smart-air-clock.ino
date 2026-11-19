@@ -8,6 +8,7 @@
 #include "buttons.h"
 #include "alarm.h"
 #include "audio.h"
+#include "microfoon.h"
 
 #include <time.h>
 
@@ -22,14 +23,30 @@ int remoteRed;
 int remoteGreen;
 int remoteBlue;
 
+bool displayEnabled = true;
+bool powerOffMode = false;
+
+int clapCount = 0;
+unsigned long lastClapTime = 0;
+
+static unsigned long lastPresenceTime = 0;
+
 void setup()
 {
     Serial.begin(115200);
 
+    initDisplay();
+
+    showBootMessage("Smart Air Clock");
+    showBootMessage("Booting...");
+
+    showBootMessage("Loading config");
     loadDefaultConfig();
 
+    showBootMessage("Connecting WiFi");
     connectWiFi();
 
+    showBootMessage("Downloading config");
     downloadConfig();
     lastConfigSync = millis();
     Serial.println("CONFIG:");
@@ -43,10 +60,13 @@ void setup()
     Serial.print("uploadInterval=");
     Serial.println(deviceConfig.uploadInterval);
 
+    showBootMessage("Init sensors");
     initSensors();
 
+    showBootMessage("Init RGB");
     rgb.begin();
 
+    showBootMessage("Sync time");
     configTime(
         0,
         0,
@@ -63,14 +83,15 @@ void setup()
 
     struct tm timeinfo;
 
+    showBootMessage("Wachten op tijd...");
     while(!getLocalTime(&timeinfo))
     {
         Serial.println("Wachten op tijd...");
         delay(500);
     }
 
+    showBootMessage("Tijd ontvangen");
     Serial.println("Tijd ontvangen");
-    initDisplay();
     initButtons();
     audioInit();
     initAlarm();
@@ -84,20 +105,79 @@ void loop()
 
     unsigned long now = millis();
 
+    updatePresence();
+
     // ==================================================
     // BUTTONS
     // ==================================================
 
     updateButtons();
 
+    bool powerPress = powerPressed();
+    bool powerLong = powerLongPressed();
+
+    bool setPress = setPressed();
+    bool setLong = setLongPressed();
+
+    bool upPress = upPressed();
+    bool upHold = upHeld();
+
+    // ==================================================
+    // POWER MANAGEMENT
+    // ==================================================
+
+    if(powerOffMode)
+    {
+        Serial.println("POWER OFF MODE");
+
+        if(powerPress)
+        {
+            Serial.println("WAKE UP");
+            powerOffMode = false;
+            displayEnabled = true;
+            setAlarmMenuState(ALARM_NORMAL);
+        }
+    }
+    else if(
+        getAlarmMenuState() ==
+        ALARM_NORMAL
+    )
+    {
+        if(powerLong)
+        {
+            powerOffMode = true;
+            displayEnabled = false;
+
+            setAlarmMenuState(
+                ALARM_NORMAL
+            );
+
+            clearDisplay();
+            rgb.off();
+
+            stopAlarm();
+        }
+        else if(powerPress)
+        {
+            displayEnabled =
+                !displayEnabled;
+
+            if(!displayEnabled)
+            {
+                clearDisplay();
+            }
+        }
+    }
+
     // ==================================================
     // ALARM MENU
     // ==================================================
 
     if(
-        setLongPressed() &&
+        setLong &&
         getAlarmMenuState() ==
-        ALARM_NORMAL
+        ALARM_NORMAL &&
+        !powerOffMode
     )
     {
         setAlarmMenuState(
@@ -107,26 +187,28 @@ void loop()
 
     // Alarm lijst
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_LIST
     )
     {
-        if(upPressed())
+        if(upPress)
         {
             nextAlarm();
         }
 
-        if(setPressed())
+        if(setPress)
         {
             startEditAlarm();
+
+            Serial.println("SET PRESSED IN ALARM_LIST");
 
             setAlarmMenuState(
                 ALARM_SET_HOUR
             );
         }
 
-        if(powerPressed())
+        if(powerPress)
         {
             setAlarmMenuState(
                 ALARM_NORMAL
@@ -134,7 +216,7 @@ void loop()
         }
 
         if(
-            powerLongPressed()
+            powerLong
             &&
             !isNewAlarmSelected()
         )
@@ -148,27 +230,27 @@ void loop()
 
     // Uur instellen
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_SET_HOUR
     )
     {
         if(
-            upPressed() ||
-            upHeld()
+            upPress ||
+            upHold
         )
         {
             increaseEditHour();
         }
 
-        if(setPressed())
+        if(setPress)
         {
             setAlarmMenuState(
                 ALARM_SET_MINUTE
             );
         }
 
-        if(powerPressed())
+        if(powerPress)
         {
             setAlarmMenuState(
                 ALARM_LIST
@@ -178,27 +260,27 @@ void loop()
 
     // Minuten instellen
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_SET_MINUTE
     )
     {
         if(
-            upPressed() ||
-            upHeld()
+            upPress ||
+            upHold
         )
         {
             increaseEditMinute();
         }
 
-        if(setPressed())
+        if(setPress)
         {
             setAlarmMenuState(
                 ALARM_SET_ENABLED
             );
         }
 
-        if(powerPressed())
+        if(powerPress)
         {
             setAlarmMenuState(
                 ALARM_LIST
@@ -208,24 +290,24 @@ void loop()
 
     // Aan / Uit
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_SET_ENABLED
     )
     {
-        if(upPressed())
+        if(upPress)
         {
             toggleEditEnabled();
         }
 
-        if(setPressed())
+        if(setPress)
         {
             setAlarmMenuState(
                 ALARM_SET_SOUND
             );
         }
         
-        if(powerPressed())
+        if(powerPress)
         {
             setAlarmMenuState(
                 ALARM_LIST
@@ -235,20 +317,20 @@ void loop()
     
     // Sound kiezen
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_SET_SOUND
     )
     {
         if(
-            upPressed() ||
-            upHeld()
+            upPress ||
+            upHold
         )
         {
             increaseEditSoundId();
         }
 
-        if(setPressed())
+        if(setPress)
         {
             saveEditedAlarm();
 
@@ -257,7 +339,7 @@ void loop()
             );
         }
 
-        if(powerPressed())
+        if(powerPress)
         {
             setAlarmMenuState(
                 ALARM_SET_ENABLED
@@ -265,12 +347,12 @@ void loop()
         }
     }
 
-    if(
+    else if(
         getAlarmMenuState() ==
         ALARM_DELETE
     )
     {
-        if(upPressed())
+        if(upPress)
         {
             Serial.println("DELETE CONFIRMED");
 
@@ -283,7 +365,7 @@ void loop()
             );
         }
 
-        if(powerPressed())
+        if(powerPress)
         {
             Serial.println("DELETE CANCELLED");
 
@@ -297,49 +379,46 @@ void loop()
     // ALARM ENGINE
     // ==================================================
 
-    updateAlarm();
-
-    // ==================================================
-    // ALARM ENGINE
-    // ==================================================
-
-    updateAlarm();
+    if(!powerOffMode)
+    {
+        updateAlarm();
+    }
 
     // STOP
 
-    if(isAlarmRinging())
+    if(!powerOffMode && isAlarmRinging())
     {
-        if(powerPressed())
+        if(setPress)
         {
             stopAlarm();
         }
 
-        if(upPressed())
+        if(upPress)
         {
             startSnooze();
         }
     }
-static AlarmMenuState lastState =
-    ALARM_NORMAL;
+    static AlarmMenuState lastState =
+        ALARM_NORMAL;
 
-if(
-    getAlarmMenuState() !=
-    lastState
-)
-{
-    Serial.print("STATE = ");
-    Serial.println(
-        getAlarmMenuState()
-    );
+    if(
+        getAlarmMenuState() !=
+        lastState
+    )
+    {
+        Serial.print("STATE = ");
+        Serial.println(
+            getAlarmMenuState()
+        );
 
-    lastState =
-        getAlarmMenuState();
-}
+        lastState =
+            getAlarmMenuState();
+    }
     // ==================================================
     // ALARM RGB
     // ==================================================
 
-    if(isAlarmRinging())
+    if(!powerOffMode && isAlarmRinging())
     {
         static unsigned long alarmBlinkTimer = 0;
         static bool blinkState = false;
@@ -381,13 +460,17 @@ if(
             ALARM_NORMAL
         )
         {
-            updateDisplay(
-                sensorData.temperature,
-                sensorData.humidity,
-                sensorData.co2
-            );
+            if(displayEnabled)
+            {
+                updateDisplay(
+                    sensorData.temperature,
+                    sensorData.humidity,
+                    sensorData.co2,
+                    sensorData.light
+                );
+            }
         }
-        else
+        else if(displayEnabled)
         {
             updateAlarmDisplay();
         }
@@ -456,7 +539,7 @@ if(
     // NORMALE RGB MODUS
     // ==================================================
 
-    if(!isAlarmRinging())
+    if(!isAlarmRinging() && !powerOffMode)
     {
         if(ledMode == "remote")
         {
@@ -506,7 +589,9 @@ if(
                 sensorData.temperature,
                 sensorData.humidity,
                 sensorData.pressure,
-                sensorData.co2
+                sensorData.co2,
+                sensorData.light,
+                sensorData.presence
             );
 
         Serial.print(
@@ -520,4 +605,118 @@ if(
         lastUpload =
             now;
     }
+    static unsigned long
+        lastBrightnessUpdate = 0;
+
+    if(
+        millis() -
+        lastBrightnessUpdate >=
+        1000
+    )
+    {
+        int light =
+            readLightLevel();
+
+        uint8_t contrast =
+            map(
+                light,
+                0,
+                4095,
+                20,
+                255
+            );
+
+        contrast =
+            constrain(
+                contrast,
+                20,
+                255
+            );
+
+        Serial.print("LIGHT=");
+        Serial.print(light);
+
+        Serial.print(" CONTRAST=");
+        Serial.println(contrast);
+
+        setDisplayContrast(contrast);
+
+        lastBrightnessUpdate =
+            millis();
+    }
+    
+    if(isAlarmRinging())
+    {
+        int sound =
+            readSoundLevel();
+
+        static bool clapDetected = false;
+
+        if(sound > 5000 && !clapDetected)
+        {
+            clapDetected = true;
+
+            clapCount++;
+
+            lastClapTime =
+                millis();
+
+            Serial.print(
+                "CLAP "
+            );
+
+            Serial.println(
+                clapCount
+            );
+        }
+
+        if(sound < 2000)
+        {
+            clapDetected = false;
+        }
+    }
+    static unsigned long lastRadarPrint = 0;
+
+    if(sensorData.presence)
+    {
+        lastPresenceTime = millis();
+
+        if(!displayEnabled)
+        {
+            displayEnabled = true;
+        }
+
+        // LED terug aan
+        if(!isAlarmRinging() && !powerOffMode)
+        {
+            if(ledMode == "remote")
+            {
+                rgb.setColor(
+                    remoteRed,
+                    remoteGreen,
+                    remoteBlue
+                );
+            }
+        }
+    }
+
+    if(
+        millis() - lastPresenceTime >=
+        60000UL
+    )
+    {
+        if(displayEnabled)
+        {
+            displayEnabled = false;
+            clearDisplay();
+
+            Serial.println(
+                "Display uit: geen aanwezigheid"
+            );
+        }
+
+        // LED uit
+        rgb.off();
+    }
+    
 }

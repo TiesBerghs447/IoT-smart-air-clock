@@ -2,7 +2,9 @@ const chartDefinitions = {
     co2Chart: { label: "CO₂ (ppm)", key: "co2", color: "#38bdf8" },
     temperatureChart: { label: "Temperatuur (°C)", key: "temperature", color: "#22c55e" },
     humidityChart: { label: "Vochtigheid (%)", key: "humidity", color: "#a855f7" },
-    pressureChart: { label: "Luchtdruk (hPa)", key: "pressure", color: "#f97316" }
+    pressureChart: { label: "Luchtdruk (hPa)", key: "pressure", color: "#f97316" },
+    lightChart: { label: "Lichtniveau", key: "light", color: "#eab308", min: 0, max: 4065 },
+    presenceChart: { label: "Aanwezigheid", key: "presence", color: "#ec4899", min: 0, max: 1, stepSize: 1 }
 };
 
 const charts = new Map();
@@ -45,6 +47,7 @@ function renderChart(canvasId, measurements, showDate)
             borderWidth: 2,
             fill: true,
             tension: 0.35,
+            stepped: definition.key === "presence",
             cubicInterpolationMode: "monotone",
             pointRadius: 0,
             pointHoverRadius: 4,
@@ -78,7 +81,16 @@ function renderChart(canvasId, measurements, showDate)
                     maxRotation: 0,
                     minRotation: 0
                 }
-            }
+            },
+            y: definition.min === undefined
+                ? {}
+                : {
+                    min: definition.min,
+                    max: definition.max,
+                    ticks: definition.stepSize === undefined
+                        ? {}
+                        : { stepSize: definition.stepSize }
+                }
         }
     };
 

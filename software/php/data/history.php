@@ -82,7 +82,9 @@ try
                 temperature,
                 humidity,
                 pressure,
-                co2
+                co2,
+                light,
+                presence
             FROM measurements
             WHERE $whereClause
         )
@@ -91,7 +93,9 @@ try
             AVG(temperature) AS temperature,
             AVG(humidity) AS humidity,
             AVG(pressure) AS pressure,
-            AVG(co2) AS co2
+            AVG(co2) AS co2,
+            AVG(light) AS light,
+            MAX(presence) AS presence
         FROM samples
         GROUP BY bucket
         ORDER BY bucket ASC"

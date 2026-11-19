@@ -235,7 +235,9 @@ bool uploadMeasurement(
     float temperature,
     float humidity,
     float pressure,
-    int co2
+    int co2,
+    int light,
+    bool presence
 )
 {
     HTTPClient http;
@@ -279,6 +281,18 @@ bool uploadMeasurement(
         "&co2=" +
         String(
             co2
+        );
+
+    payload +=
+        "&light=" +
+        String(
+            light
+        );
+
+    payload +=
+        "&presence=" +
+        String(
+            presence ? 1 : 0
         );
 
     Serial.println(

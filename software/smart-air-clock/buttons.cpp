@@ -6,6 +6,8 @@
 #define SET_PIN   5
 #define UP_PIN    6
 
+#define DEBOUNCE_TIME 20
+
 static bool powerPressEvent = false;
 static bool powerLongEvent = false;
 
@@ -18,13 +20,26 @@ static bool upHoldEvent = false;
 static bool powerLongTriggered = false;
 static bool setLongTriggered = false;
 
-static unsigned long powerDownTime = 0;
+static unsigned long powerDownTime =    0;
 static unsigned long setDownTime = 0;
 static unsigned long upDownTime = 0;
 
 static bool powerWasDown = false;
 static bool setWasDown = false;
 static bool upWasDown = false;
+
+static bool powerStableState = HIGH;
+static bool setStableState = HIGH;
+static bool upStableState = HIGH;
+
+static bool powerLastReading = HIGH;
+static bool setLastReading = HIGH;
+static bool upLastReading = HIGH;
+
+static unsigned long powerDebounceTime = 0;
+static unsigned long setDebounceTime = 0;
+static unsigned long upDebounceTime = 0;
+
 
 void initButtons()
 {
@@ -35,16 +50,72 @@ void initButtons()
 
 void updateButtons()
 {
+    unsigned long now = millis();
+
+    bool powerReading = digitalRead(POWER_PIN);
+    bool setReading = digitalRead(SET_PIN);
+    bool upReading = digitalRead(UP_PIN);
+
+    // =========================
+    // POWER DEBOUNCE
+    // =========================
+
+    if(powerReading != powerLastReading)
+    {
+        powerDebounceTime = now;
+        powerLastReading = powerReading;
+    }
+
+    if(
+        powerReading != powerStableState &&
+        now - powerDebounceTime >= DEBOUNCE_TIME
+    )
+    {
+        powerStableState = powerReading;
+    }
+    // =========================
+    // SET DEBOUNCE
+    // =========================
+
+    if(setReading != setLastReading)
+    {
+        setDebounceTime = now;
+        setLastReading = setReading;
+    }
+
+    if(
+        setReading != setStableState &&
+        now - setDebounceTime >= DEBOUNCE_TIME
+    )
+    {
+        setStableState = setReading;
+    }
+    // =========================
+    // UP DEBOUNCE
+    // =========================
+
+    if(upReading != upLastReading)
+    {
+        upDebounceTime = now;
+        upLastReading = upReading;
+    }
+
+    if(
+        upReading != upStableState &&
+        now - upDebounceTime >= DEBOUNCE_TIME
+    )
+    {
+        upStableState = upReading;
+    }
+
     bool powerDown =
-        digitalRead(POWER_PIN) == LOW;
+        (powerStableState == LOW);
 
     bool setDown =
-        digitalRead(SET_PIN) == LOW;
+        (setStableState == LOW);
 
     bool upDown =
-        digitalRead(UP_PIN) == LOW;
-
-    unsigned long now = millis();
+        (upStableState == LOW);
 
     // =========================
     // POWER
@@ -118,24 +189,30 @@ void updateButtons()
     // UP
     // =========================
 
+    static unsigned long lastRepeat = 0;
+
     if(upDown && !upWasDown)
     {
         upDownTime = now;
         upPressEvent = true;
+        lastRepeat = now;
     }
 
     if(upDown && upWasDown)
     {
-        static unsigned long lastRepeat = 0;
-
-        if(now - upDownTime >= 600)
+        if(now - upDownTime >= 500)
         {
-            if(now - lastRepeat >= 100)
+            if(now - lastRepeat >= 75)
             {
                 upHoldEvent = true;
                 lastRepeat = now;
             }
         }
+    }
+
+    if(!upDown && upWasDown)
+    {
+        lastRepeat = 0;
     }
 
     upWasDown = upDown;

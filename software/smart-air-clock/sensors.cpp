@@ -8,16 +8,23 @@
 #include "MHZ19.h"
 #include "MHZ19_ESP32.h"
 
+#include <ld2410.h>
+
 #define SDA_PIN 8
 #define SCL_PIN 9
 
 #define MHZ19_UART_RX 16
 #define MHZ19_UART_TX 15
 
+#define LIGHT_SENSOR_PIN 7
+
+#define LD2410_RX_PIN 1
+#define LD2410_TX_PIN 2
+
 Adafruit_AHTX0 aht;
 Adafruit_BMP280 bmp;
 
-HardwareSerial MHZ19_UART(2);
+HardwareSerial MHZ19_UART(0);
 
 MHZ19_ESP32_Platform uartPlatform(
     &MHZ19_UART,
@@ -25,6 +32,11 @@ MHZ19_ESP32_Platform uartPlatform(
 );
 
 MHZ19 co2UART(&uartPlatform);
+
+HardwareSerial radarSerial(2);
+ld2410 radar;
+
+bool radarConnected = false;
 
 static uint16_t lastValidCo2 = 400;
 
@@ -71,6 +83,27 @@ void initSensors()
 
     Serial.println("MH-Z19 OK");
     Serial.println();
+
+    pinMode(LIGHT_SENSOR_PIN, INPUT);
+
+    radarSerial.begin(
+        256000,
+        SERIAL_8N1,
+        LD2410_RX_PIN,
+        LD2410_TX_PIN
+    );
+
+    radarConnected =
+        radar.begin(radarSerial);
+
+    if(radarConnected)
+    {
+        Serial.println("LD2410 OK");
+    }
+    else
+    {
+        Serial.println("LD2410 NIET GEVONDEN");
+    }
 }
 
 void updateSensors()
@@ -92,6 +125,10 @@ void updateSensors()
     sensorData.pressure =
         bmp.readPressure() / 100.0;
 
+    sensorData.light =
+        readLightLevel();
+    Serial.println(analogRead(LIGHT_SENSOR_PIN));
+    Serial.println(sensorData.light);
     uint16_t co2Ppm = 0;
     int16_t co2Temp = 0;
 
@@ -130,5 +167,45 @@ void updateSensors()
     Serial.print(sensorData.pressure);
     Serial.println(" hPa");
 
+    Serial.print("Presence: ");
+    if(sensorData.presence)
+    {
+        Serial.println("JA");
+    }
+    else
+    {
+        Serial.println("NEE");
+    }
+
+
     Serial.println();
+}
+
+int readLightLevel()
+{
+    long sum = 0;
+
+    for(int i = 0; i < 10; i++)
+    {
+        sum += analogRead(
+            LIGHT_SENSOR_PIN
+        );
+    }
+
+    return sum / 10;
+}
+
+void updatePresence()
+{
+    if(radarConnected)
+    {
+        radar.read();
+
+        sensorData.presence =
+            radar.movingTargetDetected();
+    }
+    else
+    {
+        sensorData.presence = false;
+    }
 }

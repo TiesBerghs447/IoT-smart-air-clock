@@ -128,6 +128,52 @@ $webAuthCsrfToken = web_auth_csrf_token();
             <p class="chart-status" role="status" aria-live="polite">Historiek laden...</p>
             <canvas id="pressureChart" aria-label="Historische luchtdrukmetingen" role="img"></canvas>
         </section>
+
+        <section class="chart-container" aria-labelledby="lightChartTitle">
+            <div class="chart-heading">
+                <h2 id="lightChartTitle">Lichtniveau (0–4065)</h2>
+                <form class="history-controls" data-chart="lightChart">
+                    <label class="sr-only" for="lightRange">Periode voor lichtniveau</label>
+                    <select id="lightRange" class="history-range">
+                        <option value="hour">Afgelopen uur</option>
+                        <option value="day">Afgelopen dag</option>
+                        <option value="week">Afgelopen week</option>
+                        <option value="month" selected>Afgelopen maand</option>
+                        <option value="custom">Zelf datums kiezen</option>
+                    </select>
+                    <div class="history-custom-range" hidden>
+                        <label>Van <input class="history-start" type="date" aria-label="Begindatum voor lichtniveau"></label>
+                        <label>Tot en met <input class="history-end" type="date" aria-label="Einddatum voor lichtniveau"></label>
+                        <button class="history-apply" type="button">Toon</button>
+                    </div>
+                </form>
+            </div>
+            <p class="chart-status" role="status" aria-live="polite">Historiek laden...</p>
+            <canvas id="lightChart" aria-label="Historisch lichtniveau" role="img"></canvas>
+        </section>
+
+        <section class="chart-container" aria-labelledby="presenceChartTitle">
+            <div class="chart-heading">
+                <h2 id="presenceChartTitle">Aanwezigheid</h2>
+                <form class="history-controls" data-chart="presenceChart">
+                    <label class="sr-only" for="presenceRange">Periode voor aanwezigheid</label>
+                    <select id="presenceRange" class="history-range">
+                        <option value="hour">Afgelopen uur</option>
+                        <option value="day">Afgelopen dag</option>
+                        <option value="week">Afgelopen week</option>
+                        <option value="month" selected>Afgelopen maand</option>
+                        <option value="custom">Zelf datums kiezen</option>
+                    </select>
+                    <div class="history-custom-range" hidden>
+                        <label>Van <input class="history-start" type="date" aria-label="Begindatum voor aanwezigheid"></label>
+                        <label>Tot en met <input class="history-end" type="date" aria-label="Einddatum voor aanwezigheid"></label>
+                        <button class="history-apply" type="button">Toon</button>
+                    </div>
+                </form>
+            </div>
+            <p class="chart-status" role="status" aria-live="polite">Historiek laden...</p>
+            <canvas id="presenceChart" aria-label="Historische aanwezigheid: 0 is afwezig, 1 is aanwezig" role="img"></canvas>
+        </section>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

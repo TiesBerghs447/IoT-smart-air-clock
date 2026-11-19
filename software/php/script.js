@@ -66,6 +66,12 @@ async function updateData()
 
         document.getElementById("pressure")
             .innerText = data.pressure ?? "--";
+        document.getElementById("light")
+            .innerText = data.light ?? "--";
+        document.getElementById("presence")
+            .innerText = data.presence === null || data.presence === undefined
+                ? "--"
+                : Number(data.presence) === 1 ? "Aanwezig" : "Afwezig";
         document.getElementById(
             "lastUpdate"
         ).innerText =

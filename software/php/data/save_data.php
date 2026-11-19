@@ -28,7 +28,9 @@ $limits = [
     'temperature' => [-50, 100],
     'humidity'    => [0, 100],
     'pressure'    => [300, 1200],
-    'co2'         => [0, 10000]
+    'co2'         => [0, 10000],
+    'light'       => [0, 4065],
+    'presence'    => [0, 1]
 ];
 
 $values = [];
@@ -54,7 +56,8 @@ foreach ($limits as $name => [$minimum, $maximum])
     if (
         !is_finite($value) ||
         $value < $minimum ||
-        $value > $maximum
+        $value > $maximum ||
+        (in_array($name, ['co2', 'light', 'presence'], true) && floor($value) !== $value)
     )
     {
         http_response_code(400);
@@ -79,14 +82,18 @@ try
             temperature,
             humidity,
             pressure,
-            co2
+            co2,
+            light,
+            presence
         )
         VALUES
         (
             :temperature,
             :humidity,
             :pressure,
-            :co2
+            :co2,
+            :light,
+            :presence
         )'
     );
 
@@ -94,7 +101,9 @@ try
         ':temperature' => $values['temperature'],
         ':humidity'    => $values['humidity'],
         ':pressure'    => $values['pressure'],
-        ':co2'         => (int)$values['co2']
+        ':co2'         => (int)$values['co2'],
+        ':light'       => (int)$values['light'],
+        ':presence'    => (int)$values['presence']
     ]);
 
     echo json_encode([

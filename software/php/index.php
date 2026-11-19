@@ -123,6 +123,32 @@ $webAuthCsrfToken = web_auth_csrf_token();
             </div>
             <div class="card">
 
+                <h2>Lichtniveau</h2>
+
+                <div class="value">
+                    <span id="light">--</span>
+                </div>
+
+                <div class="unit">
+                    0–4065
+                </div>
+
+            </div>
+            <div class="card">
+
+                <h2>Aanwezigheid</h2>
+
+                <div class="value">
+                    <span id="presence">--</span>
+                </div>
+
+                <div class="unit">
+                    0 = nee, 1 = ja
+                </div>
+
+            </div>
+            <div class="card">
+
                 <h2>Laatste Update</h2>
 
                 <div

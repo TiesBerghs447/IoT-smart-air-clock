@@ -10,7 +10,9 @@ bool uploadMeasurement(
     float temperature,
     float humidity,
     float pressure,
-    int co2
+    int co2,
+    int light,
+    bool presence
 );
 
 bool downloadLedState(

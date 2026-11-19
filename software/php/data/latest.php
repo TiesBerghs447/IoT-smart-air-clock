@@ -21,6 +21,8 @@ try
             humidity,
             pressure,
             co2,
+            light,
+            presence,
             timestamp,
             EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - timestamp)) AS seconds_since_update
          FROM measurements
@@ -35,6 +37,8 @@ try
         'humidity' => null,
         'pressure' => null,
         'co2' => null,
+        'light' => null,
+        'presence' => null,
         'timestamp' => null,
         'seconds_since_update' => null,
     ];
