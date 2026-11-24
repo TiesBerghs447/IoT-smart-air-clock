@@ -6,6 +6,10 @@
  */
 header('Content-Type: application/json; charset=utf-8');
 
+// Alleen de ESP32 (met API-sleutel) mag het LED-commando ophalen.
+require_once __DIR__ . '/../settings/device_auth.php';
+require_device_api_key();
+
 $file = __DIR__ . '/command.json';
 
 if (!file_exists($file))
@@ -19,4 +23,4 @@ if (!file_exists($file))
     exit;
 }
 
-echo file_get_contents($file);
+echo file_get_contents($file);

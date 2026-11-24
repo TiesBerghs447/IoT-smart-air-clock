@@ -321,19 +321,14 @@ void updateAlarmDisplay()
             display.setCursor(0, 0);
             display.println("GELUID");
 
-            display.setTextSize(3);
+            display.setTextSize(2);
 
-            display.setCursor(15, 20);
+            display.setCursor(15, 25);
 
-            char sound[3];
-
-            sprintf(
-                sound,
-                "%02d",
-                getEditSoundId()
+            // Naam i.p.v. nummer: zelfde namen als op de website.
+            display.println(
+                soundName(getEditSoundId())
             );
-
-            display.println(sound);
 
             break;
         }
@@ -382,7 +377,7 @@ void updateAlarmDisplay()
                 );
 
                 display.println(
-                    "SET=JA POWER=NEE"
+                    "UP=JA POWER=NEE"
                 );
             }
 
@@ -442,4 +437,4 @@ void setDisplayContrast(uint8_t contrast)
     display.ssd1306_command(
         contrast
     );
-}
+}

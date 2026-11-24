@@ -1,18 +1,38 @@
 #ifndef ALARM_H
 #define ALARM_H
 
+#define MAX_ALARMS 5
+
+// Geluid-ID's zijn dezelfde als op de website (alarms.php) en in de database.
+// Zo betekent soundID 5 overal "Vogels". De vertaling naar het MP3-bestand
+// op de SD-kaart gebeurt alleen in soundTrack().
+#define DEFAULT_SOUND_ID 1
+
 struct Alarm
 {
-    int id;
+    int id;          // id in de database, <= 0 = nog niet op de server
 
     bool used;
     bool enabled;
+    bool dirty;      // lokaal gewijzigd, nog niet naar de server gestuurd
 
     int hour;
     int minute;
 
     int soundID;
 };
+
+// Geluid-hulpfuncties
+int normalizeSoundId(int soundId);   // ongeldige id -> DEFAULT_SOUND_ID
+int nextSoundId(int soundId);        // volgende geluid in de lijst
+int soundTrack(int soundId);         // MP3-tracknummer op de SD-kaart
+const char* soundName(int soundId);  // korte naam voor het OLED-scherm
+
+// Vervangt alle alarmen in één keer (gebruikt door de server-sync).
+void replaceAlarms(const Alarm* list, int count);
+
+// Markeert een alarm als gesynchroniseerd met de server.
+void markAlarmSynced(int index, int id);
 
 enum AlarmMenuState
 {
@@ -112,11 +132,10 @@ int getAlarmId(
 
 int getEditSoundId();
 void increaseEditSoundId();
-int getEditSoundId();
 
 void setAlarmSoundId(
     int index,
     int soundId
 );
 
-#endif
+#endif

@@ -11,11 +11,10 @@ typedef struct
     uint16_t co2;
     int light;
     bool presence;
+    bool valid;   // true zodra temperatuur/vocht/druk minstens 1x correct gelezen zijn
 } SensorData;
 
 extern SensorData sensorData;
-
-#pragma once
 
 enum PowerState
 {
@@ -26,4 +25,4 @@ enum PowerState
 
 extern PowerState powerState;
 
-#endif
+#endif

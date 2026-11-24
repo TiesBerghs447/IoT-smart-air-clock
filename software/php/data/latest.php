@@ -43,6 +43,32 @@ try
         'seconds_since_update' => null,
     ];
 
+    // Trend: nieuwste meting t.o.v. de laatste meting van minstens 30 min eerder.
+    $previous = $connection->query(
+        "SELECT temperature, humidity, pressure, co2
+         FROM measurements
+         WHERE timestamp <= (SELECT MAX(timestamp) FROM measurements) - INTERVAL '30 minutes'
+         ORDER BY timestamp DESC
+         LIMIT 1"
+    )->fetch(PDO::FETCH_ASSOC);
+
+    foreach (['temperature', 'humidity', 'pressure', 'co2'] as $field) {
+        $response[$field . '_trend'] =
+            $previous && $response[$field] !== null && $previous[$field] !== null
+                ? $response[$field] <=> $previous[$field]
+                : null;
+    }
+
+    // Afwijking: CO2 meer dan 300 ppm gestegen t.o.v. de meting van 10 min eerder.
+    $earlier = $connection->query(
+        "SELECT co2 FROM measurements
+         WHERE timestamp <= (SELECT MAX(timestamp) FROM measurements) - INTERVAL '10 minutes'
+         ORDER BY timestamp DESC LIMIT 1"
+    )->fetchColumn();
+    $response['co2_spike'] =
+        $earlier !== false && $response['co2'] !== null
+        && $response['co2'] - $earlier > 300;
+
     $secondsSinceUpdate =
         $response['seconds_since_update'] === null
             ? null
@@ -71,9 +97,11 @@ try
 }
 catch (Throwable $error)
 {
+    error_log('Laatste meting ophalen mislukt: ' . $error->getMessage());
+
     http_response_code(500);
 
     echo json_encode([
-        'error' => $error->getMessage()
+        'error' => 'De laatste meting kon niet worden opgehaald.'
     ]);
-}
+}

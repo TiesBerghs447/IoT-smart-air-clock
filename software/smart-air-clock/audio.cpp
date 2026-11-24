@@ -8,6 +8,7 @@ static HardwareSerial mp3Serial(1);
 static DFRobotDFPlayerMini dfPlayer;
 
 static bool audioPlaying = false;
+static bool audioReady = false;   // false als de DFPlayer niet antwoordt
 static uint16_t currentTrack = 1;
 
 void audioInit()
@@ -33,6 +34,8 @@ void audioInit()
         return;
     }
 
+    audioReady = true;
+
     showBootMessage("[AUDIO] DFPlayer OK");
     Serial.println("[AUDIO] DFPlayer OK");
     delay(500);
@@ -48,6 +51,12 @@ void audioInit()
 
 void audioPlay(uint16_t track)
 {
+    if(!audioReady)
+    {
+        Serial.println("[AUDIO] Geen DFPlayer, kan niet afspelen");
+        return;
+    }
+
     currentTrack = track;
 
     dfPlayer.play(track);
@@ -60,6 +69,12 @@ void audioPlay(uint16_t track)
 
 void audioStop()
 {
+    if(!audioReady)
+    {
+        audioPlaying = false;
+        return;
+    }
+
     dfPlayer.stop();
 
     audioPlaying = false;
@@ -83,6 +98,11 @@ void audioResume()
 
 void audioSetVolume(uint8_t volume)
 {
+    if(!audioReady)
+    {
+        return;
+    }
+
     if (volume > 30)
     {
         volume = 30;
@@ -96,7 +116,7 @@ void audioSetVolume(uint8_t volume)
 
 void audioUpdate()
 {
-    if (!audioPlaying)
+    if (!audioReady || !audioPlaying)
     {
         return;
     }
@@ -133,4 +153,4 @@ void audioUpdate()
                 break;
         }
     }
-}
+}

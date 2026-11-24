@@ -1,5 +1,7 @@
 <?php
 
+header('Content-Type: application/json; charset=utf-8');
+
 require_once __DIR__ . '/device_auth.php';
 require_device_api_key();
 
@@ -32,4 +34,4 @@ $stmt->execute([
 
 echo json_encode([
     'success' => true
-]);
+]);

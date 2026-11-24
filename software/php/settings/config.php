@@ -7,10 +7,8 @@
  */
 
 return [
-
-    // API sleutel voor de ESP32
-    "device_api_key" =>
-        "smartairclock2026api123456789012345",
+    // De ESP32 API-sleutel staat NIET meer hier (dit bestand staat op GitHub).
+    // Zet hem in de Render-omgevingsvariabele ESP_API_KEY.
 
     // CO2 drempelwaarden
     "co2_good_max" =>
@@ -51,4 +49,4 @@ return [
 
     "red_enabled" =>
         true
-];
+];

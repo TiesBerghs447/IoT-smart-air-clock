@@ -30,14 +30,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $submittedUsername = $_POST['username'] ?? '';
         $submittedPasscode = $_POST['passcode'] ?? '';
 
-        if (
-            is_string($submittedUsername)
-            && is_string($submittedPasscode)
-            && hash_equals($username, $submittedUsername)
-            && hash_equals($passcode, $submittedPasscode)
-        ) {
+        // Optioneel tweede account (alleen-lezen) via env viewer_user/viewer_passcode.
+        $viewerUser = getenv('viewer_user');
+        $viewerPass = getenv('viewer_passcode');
+        $role = null;
+
+        if (is_string($submittedUsername) && is_string($submittedPasscode)) {
+            if (hash_equals($username, $submittedUsername) && hash_equals($passcode, $submittedPasscode)) {
+                $role = 'admin';
+            } elseif (
+                is_string($viewerUser) && $viewerUser !== ''
+                && is_string($viewerPass) && $viewerPass !== ''
+                && hash_equals($viewerUser, $submittedUsername)
+                && hash_equals($viewerPass, $submittedPasscode)
+            ) {
+                $role = 'viewer';
+            }
+        }
+
+        if ($role !== null) {
             session_regenerate_id(true);
             $_SESSION['web_authenticated'] = true;
+            $_SESSION['web_role'] = $role;
 
             $returnTo =
                 $_SESSION['web_auth_return_to'] ?? '';

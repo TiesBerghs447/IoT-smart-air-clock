@@ -8,6 +8,13 @@ const chartDefinitions = {
 };
 
 const charts = new Map();
+let thresholds = { co2_good_max: 800, co2_warning_max: 1200 };
+
+// Alarmgrenzen komen uit dezelfde instellingen als de RGB-led en het dashboard.
+const thresholdsReady = fetch("settings/get_config.php", { cache: "no-store" })
+    .then(response => response.json())
+    .then(config => { thresholds = { ...thresholds, ...config }; })
+    .catch(() => {});
 
 function formatTimestamp(timestamp, showDate)
 {
@@ -54,6 +61,20 @@ function renderChart(canvasId, measurements, showDate)
             pointHitRadius: 8
         }]
     };
+
+    if (definition.key === "co2")
+    {
+        [["Matig", thresholds.co2_good_max, "#eab308"], ["Slecht", thresholds.co2_warning_max, "#ef4444"]]
+            .forEach(([name, value, color]) => data.datasets.push({
+                label: `${name} (${value} ppm)`,
+                data: measurements.map(() => Number(value)),
+                borderColor: color,
+                borderDash: [6, 4],
+                borderWidth: 1,
+                pointRadius: 0,
+                fill: false
+            }));
+    }
 
     const options = {
         responsive: true,
@@ -144,6 +165,7 @@ async function loadHistory(controls)
             cache: "no-store"
         });
         const result = await response.json();
+        await thresholdsReady;
 
         if (!response.ok)
         {

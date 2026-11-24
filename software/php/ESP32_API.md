@@ -2,7 +2,7 @@
 
 # ESP32 API
 
-Configureer op de PHP-host een omgevingsvariabele `ESP_API_KEY` met minimaal 32 willekeurige tekens. Als de host geen eigen omgevingsvariabelen ondersteunt, zet de sleutel in `settings/config.php` bij `device_api_key`. De API weigert requests zolang geen geldige sleutel is ingesteld. Gebruik dezelfde sleutel in de firmware en stuur hem mee als `X-API-Key`; verstuur requests uitsluitend over HTTPS. De browserconfiguratie geeft de sleutel niet terug.
+Configureer op de PHP-host een omgevingsvariabele `ESP_API_KEY` met minimaal 32 willekeurige tekens. De sleutel staat bewust niet in de broncode. De API weigert requests zolang geen geldige sleutel is ingesteld. Gebruik dezelfde sleutel in de firmware en stuur hem mee als `X-API-Key`; verstuur requests uitsluitend over HTTPS. De browserconfiguratie geeft de sleutel niet terug.
 
 ## Website-login
 
@@ -10,7 +10,15 @@ De website gebruikt de Render-omgevingsvariabelen `user` en `passcode` voor de l
 
 ## Metingen verzenden
 
-`POST /data/save_data.php` verwacht `application/x-www-form-urlencoded` met `temperature`, `humidity`, `pressure`, `co2`, `light` (geheel getal van 0 t/m 4065) en `presence` (0 of 1). Succes geeft HTTP 200 met `{"status":"ok"}`. Ongeldige waarden geven HTTP 400; een ongeldige sleutel geeft HTTP 401.
+`POST /data/save_data.php` verwacht `application/x-www-form-urlencoded` met `temperature`, `humidity`, `pressure`, `co2`, `light` (geheel getal van 0 t/m 4095) en `presence` (0 of 1). Succes geeft HTTP 200 met `{"status":"ok"}`. Optioneel: `timestamp` (Unix-tijd) voor metingen uit de offline buffer; max. 7 dagen oud en niet in de toekomst. Ongeldige waarden geven HTTP 400; een ongeldige sleutel geeft HTTP 401.
+
+## Alarm opslaan vanaf het toestel
+
+`POST /settings/save_alarm.php` met `hour`, `minute`, `enabled` (0/1), `soundID` en optioneel `id`. Antwoord: `{"id": n}`. Met `id` wordt het alarm bijgewerkt; zonder `id` wordt een bestaand alarm op hetzelfde tijdstip bijgewerkt of een nieuw aangemaakt. HTTP 409 = al 5 alarmen.
+
+## LED-commando ophalen
+
+`GET /data/get_commando.php` vereist ook `X-API-Key`.
 
 De tabel `measurements` moet de kolom `light` bevatten. De bestaande kolom `presence` kan als `integer`/`smallint` blijven staan. Voer eenmalig uit op de PostgreSQL-database als `light` nog ontbreekt:
 

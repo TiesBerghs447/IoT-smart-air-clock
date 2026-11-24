@@ -59,6 +59,16 @@ function web_auth_require(bool $jsonResponse = false): void
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
     if (!empty($_SESSION['web_authenticated'])) {
+        // Rol "viewer" mag alleen lezen: elke schrijfactie op de site is een POST.
+        if (
+            ($_SESSION['web_role'] ?? 'admin') === 'viewer'
+            && $_SERVER['REQUEST_METHOD'] !== 'GET'
+        ) {
+            http_response_code(403);
+            header('Content-Type: text/plain; charset=utf-8');
+            exit('Alleen-lezen account: wijzigen is niet toegestaan.');
+        }
+
         return;
     }
 

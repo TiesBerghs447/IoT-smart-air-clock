@@ -1,15 +1,21 @@
 #include "alarm.h"
 #include "audio.h"
+#include "config.h"
 
 #include <Arduino.h>
 #include <time.h>
 #include <Preferences.h>
 
-#define MAX_ALARM_SOUND 5
+// Na zoveel tijd stopt een niet-afgezet alarm vanzelf
+// (bv. wanneer niemand thuis is).
+#define ALARM_MAX_RING_MS (10UL * 60UL * 1000UL)
+
+// Sluimertijd in seconden
+#define SNOOZE_SECONDS (5 * 60)
 
 static Preferences prefs;
 
-static Alarm alarms[5];
+static Alarm alarms[MAX_ALARMS];
 
 static int alarmCount = 0;
 
@@ -17,8 +23,11 @@ static bool alarmRinging = false;
 
 static bool alarmSnoozed = false;
 
-static int snoozeHour = 0;
-static int snoozeMinute = 0;
+// Sluimeren op basis van Unix-tijd i.p.v. uur:minuut vergelijken:
+// werkt ook als die ene minuut gemist wordt en over middernacht.
+static time_t snoozeUntil = 0;
+
+static unsigned long ringStartedAt = 0;
 
 static AlarmMenuState menuState =
     ALARM_NORMAL;
@@ -33,24 +42,91 @@ static int lastTriggeredMinute = -1;
 
 static bool alarmAudioPlaying = false;
 
-static int activeSoundId = 1;
-static int editSoundId = 1;
-
-const int soundTrackMap[] =
-{
-    0,
-    1, // WakeUp
-    3, // RickAstly
-    4, // Bird
-    5, // StarDestroyer
-    6  // Piano
-};
+static int activeSoundId = DEFAULT_SOUND_ID;
+static int editSoundId = DEFAULT_SOUND_ID;
 
 extern bool deleteAlarmServer(int id);
 
+// =========================
+// Geluiden
+// =========================
+
+struct SoundInfo
+{
+    int id;            // id op website/database
+    int track;         // bestandsnummer op SD-kaart (000X....mp3)
+    const char* name;  // tekst op OLED
+};
+
+// Moet overeenkomen met alarm_sound_options() in alarms.php
+// en met de bestanden in de map songs/.
+static const SoundInfo sounds[] =
+{
+    { 1, 1, "WakeUp" },   // 0001WakeUp.mp3
+    { 2, 3, "Rick"   },   // 0003RickAsly.mp3
+    { 4, 5, "Star"   },   // 0005StarDestroyer.mp3
+    { 5, 4, "Vogels" },   // 0004Bird.mp3
+    { 7, 6, "Piano"  }    // 0006Piano.mp3
+};
+
+static const int SOUND_COUNT =
+    sizeof(sounds) / sizeof(sounds[0]);
+
+static int soundIndex(int soundId)
+{
+    for(int i = 0; i < SOUND_COUNT; i++)
+    {
+        if(sounds[i].id == soundId)
+        {
+            return i;
+        }
+    }
+
+    return 0;
+}
+
+int normalizeSoundId(int soundId)
+{
+    return sounds[soundIndex(soundId)].id;
+}
+
+int nextSoundId(int soundId)
+{
+    return sounds[(soundIndex(soundId) + 1) % SOUND_COUNT].id;
+}
+
+int soundTrack(int soundId)
+{
+    return sounds[soundIndex(soundId)].track;
+}
+
+const char* soundName(int soundId)
+{
+    return sounds[soundIndex(soundId)].name;
+}
+
+static void startRinging(int soundId)
+{
+    alarmRinging = true;
+    ringStartedAt = millis();
+    activeSoundId = normalizeSoundId(soundId);
+
+    // Audio uit via dashboard -> alleen de rode LED knippert.
+    if(deviceConfig.audioEnabled)
+    {
+        audioSetVolume(deviceConfig.audioVolume);
+        audioPlay(soundTrack(activeSoundId));
+        alarmAudioPlaying = true;
+    }
+}
+
+// =========================
+// Beheer
+// =========================
+
 void initAlarm()
 {
-     loadAlarms();
+    loadAlarms();
 
     alarmRinging = false;
 
@@ -69,7 +145,7 @@ bool addAlarm(
     int minute
 )
 {
-    if(alarmCount >= 5)
+    if(alarmCount >= MAX_ALARMS)
     {
         return false;
     }
@@ -78,13 +154,15 @@ bool addAlarm(
 
     alarms[alarmCount].enabled = true;
 
+    alarms[alarmCount].dirty = true;
+
     alarms[alarmCount].hour = hour;
 
     alarms[alarmCount].minute = minute;
 
     alarms[alarmCount].id = -1;
 
-    alarms[alarmCount].soundID = 1;
+    alarms[alarmCount].soundID = DEFAULT_SOUND_ID;
 
     alarmCount++;
 
@@ -96,14 +174,6 @@ bool addAlarm(
 void removeAlarm(int index)
 {
     Serial.println("REMOVE ALARM CALLED");
-
-    if(
-        index < 0 ||
-        index >= alarmCount
-    )
-    {
-        return;
-    }
 
     if(
         index < 0 ||
@@ -175,16 +245,52 @@ void enableAlarm(
     saveAlarms();
 }
 
+void replaceAlarms(const Alarm* list, int count)
+{
+    alarmCount = constrain(count, 0, MAX_ALARMS);
+
+    for(int i = 0; i < alarmCount; i++)
+    {
+        alarms[i] = list[i];
+        alarms[i].used = true;
+        alarms[i].dirty = false;
+    }
+
+    if(selectedAlarm > alarmCount)
+    {
+        selectedAlarm = 0;
+    }
+
+    saveAlarms();
+}
+
+void markAlarmSynced(int index, int id)
+{
+    if(
+        index < 0 ||
+        index >= alarmCount
+    )
+    {
+        return;
+    }
+
+    alarms[index].id = id;
+    alarms[index].dirty = false;
+}
+
 Alarm getAlarm(
     int index
 )
 {
     Alarm emptyAlarm;
 
+    emptyAlarm.id = -1;
     emptyAlarm.used = false;
     emptyAlarm.enabled = false;
+    emptyAlarm.dirty = false;
     emptyAlarm.hour = 0;
     emptyAlarm.minute = 0;
+    emptyAlarm.soundID = DEFAULT_SOUND_ID;
 
     if(
         index < 0 ||
@@ -228,77 +334,64 @@ void startSnooze()
 
     alarmAudioPlaying = false;
 
-    struct tm timeinfo;
+    // Altijd stoppen met rinkelen, ook als de tijd even niet beschikbaar is.
+    alarmRinging = false;
 
-    if(
-        !getLocalTime(
-            &timeinfo
-        )
-    )
+    time_t now = time(nullptr);
+
+    if(now < 100000)   // tijd nog niet gesynchroniseerd
     {
+        alarmSnoozed = false;
         return;
     }
 
-    snoozeHour =
-        timeinfo.tm_hour;
-
-    snoozeMinute =
-        timeinfo.tm_min + 5;
-
-    if(
-        snoozeMinute >= 60
-    )
-    {
-        snoozeMinute -= 60;
-
-        snoozeHour++;
-    }
-
-    if(
-        snoozeHour >= 24
-    )
-    {
-        snoozeHour = 0;
-    }
-
-    alarmRinging = false;
+    snoozeUntil = now + SNOOZE_SECONDS;
 
     alarmSnoozed = true;
 }
 
 void updateAlarm()
 {
+    // Rinkelt al te lang -> automatisch stoppen
+    if(
+        alarmRinging &&
+        millis() - ringStartedAt >= ALARM_MAX_RING_MS
+    )
+    {
+        Serial.println("Alarm automatisch gestopt (timeout)");
+        stopAlarm();
+    }
+
     struct tm timeinfo;
 
     if(
         !getLocalTime(
-            &timeinfo
+            &timeinfo,
+            10
         )
     )
     {
         return;
     }
 
-    if(alarmSnoozed)
+    if(
+        alarmSnoozed &&
+        time(nullptr) >= snoozeUntil
+    )
     {
-        if(
-            timeinfo.tm_hour ==
-                snoozeHour
-            &&
-            timeinfo.tm_min ==
-                snoozeMinute
-        )
-        {
-            alarmSnoozed = false;
+        alarmSnoozed = false;
 
-            alarmRinging = true;
+        startRinging(activeSoundId);
+    }
 
-            audioPlay(
-                soundTrackMap[activeSoundId]
-            );
+    int currentMinute =
+        timeinfo.tm_hour * 60 +
+        timeinfo.tm_min;
 
-            alarmAudioPlaying = true;
-        }
+    // Elke alarmminuut maar één keer afgaan.
+    if(currentMinute == lastTriggeredMinute)
+    {
+        return;
     }
 
     for(
@@ -322,35 +415,22 @@ void updateAlarm()
                 timeinfo.tm_min
         )
         {
-            int currentMinute =
-                timeinfo.tm_hour * 60 +
-                timeinfo.tm_min;
+            lastTriggeredMinute =
+                currentMinute;
 
-            if(
-                currentMinute !=
-                lastTriggeredMinute
-            )
-            {
-                alarmRinging = true;
+            // Nieuw alarm annuleert een lopende sluimer.
+            alarmSnoozed = false;
 
-                if(!alarmAudioPlaying)
-                {
-                    activeSoundId =
-                        alarms[i].soundID;
+            startRinging(alarms[i].soundID);
 
-                    audioPlay(
-                        soundTrackMap[activeSoundId]
-                    );
-
-                    alarmAudioPlaying = true;
-                }
-
-                lastTriggeredMinute =
-                    currentMinute;
-            }
+            break;
         }
     }
 }
+
+// =========================
+// Menu
+// =========================
 
 AlarmMenuState getAlarmMenuState()
 {
@@ -373,7 +453,7 @@ void nextAlarm()
 {
     selectedAlarm++;
 
-    if(alarmCount >= 5)
+    if(alarmCount >= MAX_ALARMS)
     {
         if(selectedAlarm >= alarmCount)
         {
@@ -393,7 +473,7 @@ void previousAlarm()
 {
     selectedAlarm--;
 
-    if(alarmCount >= 5)
+    if(alarmCount >= MAX_ALARMS)
     {
         if(selectedAlarm < 0)
         {
@@ -411,7 +491,7 @@ void previousAlarm()
 
 bool isNewAlarmSelected()
 {
-    if(alarmCount >= 5)
+    if(alarmCount >= MAX_ALARMS)
     {
         return false;
     }
@@ -450,11 +530,11 @@ void startEditAlarm()
             alarms[selectedAlarm].enabled;
 
         editSoundId =
-            alarms[selectedAlarm].soundID;
+            normalizeSoundId(alarms[selectedAlarm].soundID);
     }
     else
     {
-        if(alarmCount >= 5)
+        if(alarmCount >= MAX_ALARMS)
         {
             return;
         }
@@ -462,7 +542,7 @@ void startEditAlarm()
         editHour = 7;
         editMinute = 0;
         editEnabled = true;
-        editSoundId = 1;
+        editSoundId = DEFAULT_SOUND_ID;
     }
 }
 
@@ -488,20 +568,17 @@ void increaseEditMinute()
 
 void increaseEditSoundId()
 {
-    editSoundId++;
-
-    if(editSoundId > MAX_ALARM_SOUND)
-    {
-        editSoundId = 1;
-    }
+    // Alleen geldige geluiden (dezelfde als op de website).
+    editSoundId =
+        nextSoundId(editSoundId);
 }
-
 
 void toggleEditEnabled()
 {
     editEnabled =
         !editEnabled;
 }
+
 void saveEditedAlarm()
 {
     if(selectedAlarm < alarmCount)
@@ -514,16 +591,24 @@ void saveEditedAlarm()
 
         alarms[selectedAlarm].enabled =
             editEnabled;
-            
+
         alarms[selectedAlarm].soundID =
             editSoundId;
+
+        // Moet nog naar de server, anders overschrijft de sync het.
+        alarms[selectedAlarm].dirty = true;
     }
     else
     {
-        addAlarm(
-            editHour,
-            editMinute
-        );
+        if(
+            !addAlarm(
+                editHour,
+                editMinute
+            )
+        )
+        {
+            return;   // lijst vol
+        }
 
         alarms[alarmCount - 1].enabled =
             editEnabled;
@@ -534,6 +619,10 @@ void saveEditedAlarm()
 
     saveAlarms();
 }
+
+// =========================
+// Flash-opslag
+// =========================
 
 void saveAlarms()
 {
@@ -551,10 +640,12 @@ void saveAlarms()
         sprintf(idKey, "id%d", i);
         sprintf(soundKey, "sound%d", i);
 
+        // bit 0 = enabled, bit 1 = dirty
         uint32_t packed =
             (alarms[i].hour << 16) |
             (alarms[i].minute << 8) |
-            alarms[i].enabled;
+            (alarms[i].dirty ? 0x02 : 0) |
+            (alarms[i].enabled ? 0x01 : 0);
 
         prefs.putUInt(key, packed);
         prefs.putInt(idKey, alarms[i].id);
@@ -570,10 +661,7 @@ void loadAlarms()
 
     alarmCount = prefs.getInt("count", 0);
 
-    if (alarmCount > 5)
-    {
-        alarmCount = 5;
-    }
+    alarmCount = constrain(alarmCount, 0, MAX_ALARMS);
 
     for (int i = 0; i < alarmCount; i++)
     {
@@ -593,16 +681,19 @@ void loadAlarms()
             prefs.getInt(idKey, -1);
 
         alarms[i].soundID =
-            prefs.getInt(soundKey, 1);
+            normalizeSoundId(prefs.getInt(soundKey, DEFAULT_SOUND_ID));
 
         alarms[i].hour =
-            (packed >> 16) & 0xFF;
+            constrain((int)((packed >> 16) & 0xFF), 0, 23);
 
         alarms[i].minute =
-            (packed >> 8) & 0xFF;
+            constrain((int)((packed >> 8) & 0xFF), 0, 59);
 
         alarms[i].enabled =
-            packed & 0xFF;
+            packed & 0x01;
+
+        alarms[i].dirty =
+            packed & 0x02;
     }
 
     prefs.end();
@@ -612,13 +703,13 @@ void loadAlarms()
     for (int i = 0; i < alarmCount; i++)
     {
         Serial.printf(
-            "A%d ID=%d %02d:%02d %s SOUND=%d\n",
+            "A%d ID=%d %02d:%02d %s SOUND=%s\n",
             i + 1,
             alarms[i].id,
             alarms[i].hour,
             alarms[i].minute,
             alarms[i].enabled ? "ON" : "OFF",
-            alarms[i].soundID
+            soundName(alarms[i].soundID)
         );
     }
 }
@@ -679,5 +770,5 @@ void setAlarmSoundId(
     }
 
     alarms[index].soundID =
-        soundId;
+        normalizeSoundId(soundId);
 }

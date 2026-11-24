@@ -6,7 +6,7 @@
  */
 return [
 
-    "device_api_key" => "smartairclock2026api123456789012345",
+    // device_api_key: alleen via omgevingsvariabele ESP_API_KEY
 
     "co2_good_max" => 800,
     "co2_warning_max" => 1200,
@@ -29,4 +29,4 @@ return [
     "orange_enabled" => true,
     "red_enabled" => true
 
-];
+];

@@ -6,4 +6,7 @@ void updateSensors();
 int readLightLevel();
 void updatePresence();
 
-#endif
+// false als de LD2410-radar niet gevonden werd
+bool radarAvailable();
+
+#endif

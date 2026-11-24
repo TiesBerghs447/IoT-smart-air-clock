@@ -2,12 +2,9 @@
 
 function require_device_api_key(): void
 {
+    // Alleen uit de omgevingsvariabele: een sleutel in de broncode staat
+    // publiek op GitHub en is dus geen geheim meer.
     $apiKey = getenv('ESP_API_KEY');
-
-    if (!is_string($apiKey) || $apiKey === '') {
-        $config = include __DIR__ . '/config.php';
-        $apiKey = $config['device_api_key'] ?? '';
-    }
 
     if (!is_string($apiKey) || strlen($apiKey) < 32) {
         http_response_code(503);
@@ -22,4 +19,4 @@ function require_device_api_key(): void
         echo json_encode(['error' => 'Ongeldige API-sleutel']);
         exit;
     }
-}
+}

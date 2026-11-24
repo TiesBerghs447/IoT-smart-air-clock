@@ -55,17 +55,13 @@ async function updateData()
         const data =
             await response.json();
 
-        document.getElementById("co2")
-            .innerText = data.co2 ?? "--";
-
-        document.getElementById("temperature")
-            .innerText = data.temperature ?? "--";
-
-        document.getElementById("humidity")
-            .innerText = data.humidity ?? "--";
-
-        document.getElementById("pressure")
-            .innerText = data.pressure ?? "--";
+        const arrows = { "-1": " ↓", "0": " →", "1": " ↑" };
+        for (const key of ["co2", "temperature", "humidity", "pressure"])
+        {
+            const element = document.getElementById(key);
+            element.innerText = (data[key] ?? "--") + (arrows[data[`${key}_trend`]] ?? "");
+            element.title = "Trend t.o.v. 30 minuten geleden";
+        }
         document.getElementById("light")
             .innerText = data.light ?? "--";
         document.getElementById("presence")
@@ -86,6 +82,12 @@ async function updateData()
             ? "Nog geen meting ontvangen"
             : `Laatste meting ${data.seconds_since_update} seconden geleden`;
         updateStatus(data.co2);
+        if (data.co2_spike)
+        {
+            const status = document.getElementById("statusText");
+            status.innerText += " - CO₂ stijgt snel!";
+            status.className = "danger";
+        }
     }
     catch(error)
     {
@@ -133,8 +135,27 @@ function updateStatus(co2)
     }
 }
 
+// Externe API: buitentemperatuur via Open-Meteo (geen sleutel nodig).
+async function updateOutdoor()
+{
+    try
+    {
+        const response = await fetch(
+            "https://api.open-meteo.com/v1/forecast?latitude=50.93&longitude=5.34&current=temperature_2m"
+        );
+        const weather = await response.json();
+        document.getElementById("outdoor").innerText = weather.current.temperature_2m;
+    }
+    catch (error)
+    {
+        console.log(error);
+    }
+}
+
 (async () =>
 {
+    updateOutdoor();
+    setInterval(updateOutdoor, 600000);
     await loadConfig();
 
     updateData();

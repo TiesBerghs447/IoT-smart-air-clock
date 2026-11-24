@@ -200,15 +200,31 @@ worden aangepast.
 
 Het dashboard toont:
 
-- Actuele temperatuur
-- Actuele luchtvochtigheid
-- Actuele luchtdruk
-- Actuele CO₂-waarde
-- Luchtkwaliteitsstatus
-- Historische grafieken van maximaal de laatste 50 metingen
-- Trends over tijd
+- Actuele temperatuur, luchtvochtigheid, luchtdruk en CO₂-waarde, met trendpijl (↑ ↓ →) ten opzichte van 30 minuten eerder
+- Lichtniveau en aanwezigheid
+- Buitentemperatuur van Hasselt via de externe API Open-Meteo
+- Waarschuwing bij een snelle CO₂-stijging (meer dan 300 ppm in 10 minuten)
+- Luchtkwaliteitsstatus op basis van de instelbare CO₂-grenzen
 - Laatste meetmoment
 - Online/offline-status van de ESP32
+
+De historiekpagina toont per sensor een grafiek (Chart.js 4.4.7) met een
+periode naar keuze (uur, dag, week, maand of eigen datums). De CO₂-grafiek
+toont de alarmgrenzen als stippellijnen.
+
+## CI
+
+Een GitHub Action (`.github/workflows/ci.yml`) controleert bij elke push de
+syntax van alle PHP- en JavaScript-bestanden.
+
+## Gebruikersrollen
+
+Inloggen gebeurt via Render-omgevingsvariabelen:
+
+| Variabelen | Rol | Rechten |
+|------------|-----|---------|
+| `user`, `passcode` | admin | Alles bekijken en wijzigen |
+| `viewer_user`, `viewer_passcode` (optioneel) | viewer | Alleen bekijken; wijzigen geeft HTTP 403 |
 
 ---
 # Auteur
