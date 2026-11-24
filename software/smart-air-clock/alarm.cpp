@@ -60,15 +60,23 @@ struct SoundInfo
 
 // Moet overeenkomen met alarm_sound_options() in alarms.php
 // en met de bestanden in de map songs/.
+
+//1 = smoke alarm
+//2 = wake up
+//3 = batterij
+//4 = rick asley
+//5 = bird
+//6 = star destroyer
+//7 = piano
+
 static const SoundInfo sounds[] =
 {
-    { 1, 1, "WakeUp" },   // 0001WakeUp.mp3
-    { 2, 3, "Rick"   },   // 0003RickAsly.mp3
-    { 4, 5, "Star"   },   // 0005StarDestroyer.mp3
-    { 5, 4, "Vogels" },   // 0004Bird.mp3
-    { 7, 6, "Piano"  }    // 0006Piano.mp3
+    { 1, 2, "WakeUp" },   // website "Wake-up geluid"  -> SD-track 2
+    { 2, 4, "Rick"   },   // website "Rickroll"        -> SD-track 4
+    { 4, 6, "Star"   },   // website "Star Destroyer"  -> SD-track 6
+    { 5, 5, "Vogels" },   // website "Vogels"          -> SD-track 5
+    { 7, 7, "Piano"  }    // website "Piano"           -> SD-track 7
 };
-
 static const int SOUND_COUNT =
     sizeof(sounds) / sizeof(sounds[0]);
 

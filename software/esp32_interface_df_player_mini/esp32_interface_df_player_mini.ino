@@ -17,13 +17,20 @@ void setup()
 
   Serial.println("OK");
 
-  dfPlayer.volume(10);
+  dfPlayer.volume(30);
 
   delay(2000);
 
   Serial.println("PLAYING");
 
-  dfPlayer.play(1);
+//1 = smoke alarm
+//2 = wake up
+//3 = batterij
+//4 = rick asley
+//5 = bird
+//6 = star destroyer
+//7 = piano
+  dfPlayer.play(4);
 
   delay(2000);
 
