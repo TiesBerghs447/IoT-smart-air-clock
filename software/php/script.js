@@ -135,27 +135,8 @@ function updateStatus(co2)
     }
 }
 
-// Externe API: buitentemperatuur via Open-Meteo (geen sleutel nodig).
-async function updateOutdoor()
-{
-    try
-    {
-        const response = await fetch(
-            "https://api.open-meteo.com/v1/forecast?latitude=50.93&longitude=5.34&current=temperature_2m"
-        );
-        const weather = await response.json();
-        document.getElementById("outdoor").innerText = weather.current.temperature_2m;
-    }
-    catch (error)
-    {
-        console.log(error);
-    }
-}
-
 (async () =>
 {
-    updateOutdoor();
-    setInterval(updateOutdoor, 600000);
     await loadConfig();
 
     updateData();

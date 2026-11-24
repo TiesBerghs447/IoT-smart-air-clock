@@ -145,22 +145,8 @@ $webAuthCsrfToken = web_auth_csrf_token();
                 <div class="unit">
                     0 = nee, 1 = ja
                 </div>
-
             </div>
-            <div class="card">
-
-                <h2>Buiten (Hasselt)</h2>
-
-                <div class="value">
-                    <span id="outdoor">--</span>
-                </div>
-
-                <div class="unit">
-                    °C
-                </div>
-
-            </div>
-            <div class="card">
+                <div class="card">
 
                 <h2>Laatste Update</h2>
 
